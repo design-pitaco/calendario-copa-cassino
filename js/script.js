@@ -5,6 +5,10 @@ const featuredPromoRoot = document.querySelector("[data-featured-promo]");
 const promosDescription = document.querySelector("[data-promos-description]");
 const promosList = document.querySelector("[data-promos-list]");
 const missionsList = document.querySelector("[data-missions-list]");
+const promoDetailRoot = document.querySelector("[data-promo-detail]");
+const promoDetailHeader = document.querySelector("[data-promo-detail-header]");
+const promoDetailBody = document.querySelector("[data-promo-detail-body]");
+const promoDetailFooter = document.querySelector("[data-promo-detail-footer]");
 const themePreferenceQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
 const saoPauloDateFormatter = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -13,6 +17,11 @@ const saoPauloDateFormatter = new Intl.DateTimeFormat("pt-BR", {
 });
 const dayMs = 24 * 60 * 60 * 1000;
 let promotionCountdownTimeoutId;
+let promoDetailCloseFocusTarget;
+let activePromoDetailId;
+let promoDetailScrollY = 0;
+let promoDetailBodyInlineStyles;
+let promoDetailDragState;
 
 function getThemeParam() {
   const themeParam = new URLSearchParams(window.location.search).get("theme");
@@ -51,6 +60,19 @@ if (themePreferenceQuery && !getThemeParam()) {
     themePreferenceQuery.addListener(() => syncThemeAssets());
   }
 }
+
+function preventZoomGesture(event) {
+  event.preventDefault();
+}
+
+document.addEventListener("gesturestart", preventZoomGesture, { passive: false });
+document.addEventListener("gesturechange", preventZoomGesture, { passive: false });
+document.addEventListener("gestureend", preventZoomGesture, { passive: false });
+document.addEventListener("touchmove", (event) => {
+  if (event.touches.length > 1) {
+    event.preventDefault();
+  }
+}, { passive: false });
 
 function escapeHtml(value) {
   return String(value)
@@ -177,8 +199,12 @@ function getStatusCardClass(status) {
 function getPrimaryButton(promotion, status, classPrefix) {
   const className = `${classPrefix}__button`;
 
-  if (status === "active" && promotion.playUrl) {
-    return `<a class="${className} ${className}--primary" href="${escapeHtml(promotion.playUrl)}">Jogar Agora</a>`;
+  if (status === "active") {
+    if (promotion.playUrl) {
+      return `<a class="${className} ${className}--primary" href="${escapeHtml(promotion.playUrl)}">Jogar Agora</a>`;
+    }
+
+    return `<span class="${className} ${className}--primary" aria-disabled="true">Jogar Agora</span>`;
   }
 
   if (status === "upcoming") {
@@ -188,12 +214,28 @@ function getPrimaryButton(promotion, status, classPrefix) {
   return `<span class="${className} ${className}--ended" aria-disabled="true">Finalizada</span>`;
 }
 
+function hasPromotionDetails(promotion) {
+  const details = promotion && promotion.details;
+
+  if (!details) {
+    return false;
+  }
+
+  return Array.isArray(details.howItWorks) || Array.isArray(details.faq) || Boolean(details.termsSummary);
+}
+
 function getSecondaryButton(promotion, classPrefix) {
+  const className = `${classPrefix}__button ${classPrefix}__button--secondary`;
+
+  if (hasPromotionDetails(promotion)) {
+    return `<button class="${className}" type="button" data-promo-detail-id="${escapeHtml(promotion.id)}">Saiba Mais</button>`;
+  }
+
   if (!promotion.rulesUrl) {
     return "";
   }
 
-  return `<a class="${classPrefix}__button ${classPrefix}__button--secondary" href="${escapeHtml(promotion.rulesUrl)}">Saiba Mais</a>`;
+  return `<a class="${className}" href="${escapeHtml(promotion.rulesUrl)}">Saiba Mais</a>`;
 }
 
 function getMissionButton(mission, status) {
@@ -431,6 +473,276 @@ function renderPromotionCard(promotion, index, now = new Date()) {
   `;
 }
 
+function renderPromotionDetailStep(step, index) {
+  if (typeof step === "string") {
+    return `
+      <li class="promo-detail__step">
+        <span class="promo-detail__step-number">${index + 1}</span>
+        <p class="promo-detail__step-text">${escapeHtml(step)}</p>
+      </li>
+    `;
+  }
+
+  return `
+    <li class="promo-detail__step">
+      <span class="promo-detail__step-number">${index + 1}</span>
+      <div class="promo-detail__step-copy">
+        <h3 class="promo-detail__step-title">${escapeHtml(step.title || `Passo ${index + 1}`)}</h3>
+        <p class="promo-detail__step-text">${escapeHtml(step.text || "")}</p>
+      </div>
+    </li>
+  `;
+}
+
+function renderPromotionDetailFaq(item, index) {
+  const panelId = `promo-detail-faq-panel-${index + 1}`;
+  const triggerId = `promo-detail-faq-trigger-${index + 1}`;
+  const isOpen = index === 0;
+
+  return `
+    <div class="promo-detail-faq__item${isOpen ? " is-open" : ""}">
+      <button class="promo-detail-faq__button" type="button" id="${triggerId}" aria-expanded="${isOpen ? "true" : "false"}" aria-controls="${panelId}">
+        <span>${escapeHtml(item.question || "")}</span>
+        <img class="promo-detail-faq__icon" src="images/icon-accordion.svg" alt="">
+      </button>
+
+      <div class="promo-detail-faq__panel" id="${panelId}" aria-labelledby="${triggerId}"${isOpen ? "" : " hidden"}>
+        <p class="promo-detail-faq__answer">${escapeHtml(item.answer || "")}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderPromotionDetail(promotion, now = new Date()) {
+  if (!promoDetailHeader || !promoDetailBody || !promoDetailFooter || !hasPromotionDetails(promotion)) {
+    return;
+  }
+
+  const details = promotion.details;
+  const statusViewModel = getStatusViewModel(promotion, now);
+  const howItWorks = Array.isArray(details.howItWorks) ? details.howItWorks : [];
+  const faq = Array.isArray(details.faq) ? details.faq : [];
+  const stepsMarkup = howItWorks.map(renderPromotionDetailStep).join("");
+  const faqMarkup = faq.map(renderPromotionDetailFaq).join("");
+  const termsMarkup = details.termsSummary
+    ? `<p class="promo-detail__terms">${escapeHtml(details.termsSummary)}</p>`
+    : "";
+
+  promoDetailHeader.innerHTML = `
+    <div class="promo-detail__header-main">
+      <p class="promo-detail__eyebrow">${escapeHtml(promotion.providerName)}</p>
+      <h2 class="promo-detail__title" id="promo-detail-title">${escapeHtml(promotion.title)}</h2>
+    </div>
+
+    <button class="promo-detail__close" type="button" aria-label="Fechar detalhes da promoção" data-promo-detail-close>
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <dl class="promo-detail__meta" aria-label="Informações da promoção">
+      <div class="promo-detail__meta-item">
+        <dt>${escapeHtml(statusViewModel.label)}</dt>
+        <dd data-promo-timer="${escapeHtml(promotion.id)}" data-promo-status="${escapeHtml(statusViewModel.status)}">${escapeHtml(statusViewModel.value)}</dd>
+      </div>
+
+      <div class="promo-detail__meta-item">
+        <dt>Período</dt>
+        <dd>${escapeHtml(formatPromotionPeriod(promotion))}</dd>
+      </div>
+
+      <div class="promo-detail__meta-item">
+        <dt>${escapeHtml(promotion.prizeLabel)}</dt>
+        <dd>${escapeHtml(promotion.prizeValue)}</dd>
+      </div>
+    </dl>
+  `;
+
+  promoDetailBody.innerHTML = `
+    ${stepsMarkup ? `
+      <section class="promo-detail__section" aria-labelledby="promo-detail-how-it-works">
+        <h3 class="promo-detail__section-title" id="promo-detail-how-it-works">Como funciona</h3>
+        <ol class="promo-detail__steps">
+          ${stepsMarkup}
+        </ol>
+      </section>
+    ` : ""}
+
+    ${faqMarkup ? `
+      <section class="promo-detail__section" aria-labelledby="promo-detail-faq-title">
+        <h3 class="promo-detail__section-title" id="promo-detail-faq-title">FAQ</h3>
+        <div class="promo-detail-faq">
+          ${faqMarkup}
+        </div>
+      </section>
+    ` : ""}
+
+    ${termsMarkup}
+  `;
+
+  promoDetailFooter.innerHTML = getPrimaryButton(promotion, statusViewModel.status, "promo-detail");
+}
+
+function lockPromoDetailPageScroll() {
+  if (document.body.classList.contains("promo-detail-open")) {
+    return;
+  }
+
+  promoDetailScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  promoDetailBodyInlineStyles = {
+    position: document.body.style.position,
+    top: document.body.style.top,
+    right: document.body.style.right,
+    left: document.body.style.left,
+    width: document.body.style.width
+  };
+
+  document.body.classList.add("promo-detail-open");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${promoDetailScrollY}px`;
+  document.body.style.right = "0";
+  document.body.style.left = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockPromoDetailPageScroll() {
+  if (!document.body.classList.contains("promo-detail-open")) {
+    return;
+  }
+
+  document.body.classList.remove("promo-detail-open");
+
+  if (promoDetailBodyInlineStyles) {
+    document.body.style.position = promoDetailBodyInlineStyles.position;
+    document.body.style.top = promoDetailBodyInlineStyles.top;
+    document.body.style.right = promoDetailBodyInlineStyles.right;
+    document.body.style.left = promoDetailBodyInlineStyles.left;
+    document.body.style.width = promoDetailBodyInlineStyles.width;
+  } else {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.right = "";
+    document.body.style.left = "";
+    document.body.style.width = "";
+  }
+
+  window.scrollTo(0, promoDetailScrollY);
+  promoDetailBodyInlineStyles = undefined;
+}
+
+function resetPromotionDetailDrag(panel) {
+  promoDetailDragState = undefined;
+
+  if (!panel) {
+    return;
+  }
+
+  panel.classList.remove("is-dragging");
+  panel.style.transform = "";
+}
+
+function setupPromotionDetailDrag() {
+  if (!promoDetailRoot || promoDetailRoot.dataset.dragReady === "true") {
+    return;
+  }
+
+  const panel = promoDetailRoot.querySelector(".promo-detail__panel");
+  const handle = promoDetailRoot.querySelector(".promo-detail__handle");
+
+  if (!panel || !handle) {
+    return;
+  }
+
+  promoDetailRoot.dataset.dragReady = "true";
+
+  handle.addEventListener("pointerdown", (event) => {
+    if (window.matchMedia("(min-width: 769px)").matches) {
+      return;
+    }
+
+    promoDetailDragState = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      currentY: event.clientY
+    };
+
+    panel.classList.add("is-dragging");
+    handle.setPointerCapture(event.pointerId);
+  });
+
+  handle.addEventListener("pointermove", (event) => {
+    if (!promoDetailDragState || promoDetailDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const distanceY = Math.max(0, event.clientY - promoDetailDragState.startY);
+    promoDetailDragState.currentY = event.clientY;
+    panel.style.transform = `translateY(${distanceY}px)`;
+  });
+
+  function finishDrag(event) {
+    if (!promoDetailDragState || promoDetailDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const distanceY = Math.max(0, promoDetailDragState.currentY - promoDetailDragState.startY);
+    const shouldClose = distanceY > 72;
+
+    if (handle.hasPointerCapture(event.pointerId)) {
+      handle.releasePointerCapture(event.pointerId);
+    }
+
+    resetPromotionDetailDrag(panel);
+
+    if (shouldClose) {
+      closePromotionDetail();
+    }
+  }
+
+  handle.addEventListener("pointerup", finishDrag);
+  handle.addEventListener("pointercancel", finishDrag);
+}
+
+function openPromotionDetail(promotionId, triggerElement) {
+  const promotion = promotions.find((currentPromotion) => currentPromotion.id === promotionId);
+
+  if (!promotion || !promoDetailRoot || !hasPromotionDetails(promotion)) {
+    return;
+  }
+
+  activePromoDetailId = promotionId;
+  promoDetailCloseFocusTarget = triggerElement || document.activeElement;
+  renderPromotionDetail(promotion);
+
+  setupPromotionDetailDrag();
+  lockPromoDetailPageScroll();
+  promoDetailRoot.hidden = false;
+  window.requestAnimationFrame(() => {
+    promoDetailRoot.classList.add("is-open");
+    promoDetailRoot.querySelector(".promo-detail__close")?.focus();
+  });
+}
+
+function closePromotionDetail() {
+  if (!promoDetailRoot || promoDetailRoot.hidden) {
+    return;
+  }
+
+  activePromoDetailId = undefined;
+  promoDetailRoot.classList.remove("is-open");
+
+  setTimeout(() => {
+    if (!promoDetailRoot.classList.contains("is-open")) {
+      promoDetailRoot.hidden = true;
+      unlockPromoDetailPageScroll();
+    }
+  }, 240);
+
+  if (promoDetailCloseFocusTarget && typeof promoDetailCloseFocusTarget.focus === "function") {
+    promoDetailCloseFocusTarget.focus();
+  }
+
+  promoDetailCloseFocusTarget = undefined;
+}
+
 function renderPromotionSections(now = new Date()) {
   const featuredPromotion = getFeaturedPromotion(now);
   const sortedPromotions = getSortedPromotions(featuredPromotion, now);
@@ -442,6 +754,14 @@ function renderPromotionSections(now = new Date()) {
     promosList.innerHTML = sortedPromotions
       .map((promotion, index) => renderPromotionCard(promotion, index, now))
       .join("");
+  }
+
+  if (activePromoDetailId) {
+    const activePromotion = promotions.find((promotion) => promotion.id === activePromoDetailId);
+
+    if (activePromotion) {
+      renderPromotionDetail(activePromotion, now);
+    }
   }
 }
 
@@ -778,6 +1098,60 @@ function setupDraggableCarousel(carousel) {
 }
 
 document.querySelectorAll(".featured-promo__games, .missions__grid").forEach(setupDraggableCarousel);
+
+document.addEventListener("click", (event) => {
+  const detailTrigger = event.target.closest("[data-promo-detail-id]");
+
+  if (detailTrigger) {
+    event.preventDefault();
+    openPromotionDetail(detailTrigger.dataset.promoDetailId, detailTrigger);
+    return;
+  }
+
+  if (event.target.closest("[data-promo-detail-close]")) {
+    closePromotionDetail();
+    return;
+  }
+
+  const detailFaqButton = event.target.closest(".promo-detail-faq__button");
+
+  if (!detailFaqButton || !promoDetailRoot || !promoDetailRoot.contains(detailFaqButton)) {
+    return;
+  }
+
+  const item = detailFaqButton.closest(".promo-detail-faq__item");
+  const panel = item?.querySelector(".promo-detail-faq__panel");
+  const shouldOpen = detailFaqButton.getAttribute("aria-expanded") !== "true";
+
+  if (!item || !panel) {
+    return;
+  }
+
+  promoDetailRoot.querySelectorAll(".promo-detail-faq__item").forEach((currentItem) => {
+    const currentButton = currentItem.querySelector(".promo-detail-faq__button");
+    const currentPanel = currentItem.querySelector(".promo-detail-faq__panel");
+
+    if (!currentButton || !currentPanel) {
+      return;
+    }
+
+    currentButton.setAttribute("aria-expanded", "false");
+    currentPanel.hidden = true;
+    currentItem.classList.remove("is-open");
+  });
+
+  if (shouldOpen) {
+    detailFaqButton.setAttribute("aria-expanded", "true");
+    panel.hidden = false;
+    item.classList.add("is-open");
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closePromotionDetail();
+  }
+});
 
 if (missionsList) {
   setInterval(() => {

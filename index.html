@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Calendário Copa Cassino</title>
   <link rel="icon" type="image/png" href="images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -273,6 +273,17 @@
       </div>
     </div>
   </footer>
+
+  <div class="promo-detail" data-promo-detail hidden>
+    <button class="promo-detail__backdrop" type="button" aria-label="Fechar detalhes da promoção" data-promo-detail-close></button>
+
+    <aside class="promo-detail__panel" role="dialog" aria-modal="true" aria-labelledby="promo-detail-title">
+      <div class="promo-detail__handle" aria-hidden="true"></div>
+      <div class="promo-detail__header" data-promo-detail-header></div>
+      <div class="promo-detail__body" data-promo-detail-body></div>
+      <div class="promo-detail__footer" data-promo-detail-footer></div>
+    </aside>
+  </div>
 
   <script src="js/promotions.js"></script>
   <script src="js/missions.js"></script>
