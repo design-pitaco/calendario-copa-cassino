@@ -1122,6 +1122,10 @@ html[data-theme="light"] .mission-card__button--ended {
   margin-bottom: 12px;
 }
 
+html[data-theme="light"] .site-footer__age-icon {
+  filter: brightness(0.72);
+}
+
 .site-footer__authorized-text {
   max-width: 216px;
   margin: 0 0 12px;
