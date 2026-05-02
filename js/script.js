@@ -745,7 +745,6 @@ function setupDraggableCarousel(carousel) {
     touchMode = undefined;
     startX = touch.clientX;
     startY = touch.clientY;
-    startScrollLeft = carousel.scrollLeft;
   }, { passive: true });
 
   carousel.addEventListener("touchmove", (event) => {
@@ -766,21 +765,16 @@ function setupDraggableCarousel(carousel) {
       touchMode = Math.abs(distanceX) > Math.abs(distanceY) * 1.25 ? "horizontal" : "vertical";
     }
 
-    if (touchMode !== "horizontal") {
-      return;
-    }
-
-    event.preventDefault();
-    carousel.scrollLeft = startScrollLeft - distanceX;
-  }, { passive: false });
-
-  carousel.addEventListener("touchend", () => {
-    touchMode = undefined;
+    carousel.classList.toggle("is-touch-scrolling", touchMode === "horizontal");
   }, { passive: true });
 
-  carousel.addEventListener("touchcancel", () => {
+  function clearTouchMode() {
     touchMode = undefined;
-  }, { passive: true });
+    carousel.classList.remove("is-touch-scrolling");
+  }
+
+  carousel.addEventListener("touchend", clearTouchMode, { passive: true });
+  carousel.addEventListener("touchcancel", clearTouchMode, { passive: true });
 }
 
 document.querySelectorAll(".featured-promo__games, .missions__grid").forEach(setupDraggableCarousel);

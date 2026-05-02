@@ -466,7 +466,7 @@ html[data-theme="light"] .hero-banner__title span {
   scroll-padding-inline: 56px;
   scrollbar-width: none;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -859,7 +859,7 @@ html[data-theme="light"] .upcoming-promo-card__button--ended {
   scroll-padding-inline: var(--missions-content-offset) var(--missions-end-gap);
   scrollbar-width: none;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
 }
 
