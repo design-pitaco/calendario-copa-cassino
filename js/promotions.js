@@ -1,0 +1,120 @@
+window.COPA_PROMOTIONS = [
+  {
+    id: "copa-tada",
+    type: "tournament",
+    title: "Copa da Tada",
+    providerName: "TaDa Gaming",
+    startDate: "2026-05-01",
+    endDate: "2026-05-20",
+    prizeLabel: "Total em Prêmio",
+    prizeValue: "R$ 150.000",
+    backgroundImage: "images/bg-banner-pragmatic.png",
+    providerLogo: "images/logoTada.png",
+    providerLogoClass: "upcoming-promo-card__brand--tada",
+    playUrl: "#",
+    rulesUrl: "#",
+    gameImages: [
+      { src: "images/jogos-tada/tadagaming-lucky-macaw.png", alt: "Lucky Macaw" },
+      { src: "images/jogos-tada/tada-gaming-lucky-jaguar.png", alt: "Lucky Jaguar" },
+      { src: "images/jogos-tada/tada-gaming-fortune-gems.png", alt: "Fortune Gems" },
+      { src: "images/jogos-tada/tadagaming-lucky-jaguar.png", alt: "Lucky Jaguar" },
+      { src: "images/jogos-tada/tada-gaming-money-pot-deluxe.png", alt: "Money Pot Deluxe" },
+      { src: "images/jogos-tada/tadagaming-fortune-coins.png", alt: "Fortune Coins" },
+      { src: "images/jogos-tada/tadagaming-fortune-gems.png", alt: "Fortune Gems" },
+      { src: "images/jogos-tada/tadagaming-money-coming.png", alt: "Money Coming" }
+    ]
+  },
+  {
+    id: "slots-pragmatic",
+    type: "tournament",
+    title: "Slots Pragmatic",
+    providerName: "Pragmatic Play",
+    startDate: "2026-03-21",
+    endDate: "2026-04-30",
+    prizeLabel: "Total em Prêmios",
+    prizeValue: "R$ 330.000",
+    backgroundImage: "images/bg-banner-pragmatic.png",
+    providerLogo: "images/logoProvedorPragmatic.png",
+    providerLogoClass: "upcoming-promo-card__brand--pragmatic",
+    playUrl: "#",
+    rulesUrl: "#",
+    gameImages: [
+      { src: "images/jogos-tada/tadagaming-lucky-macaw.png", alt: "Lucky Macaw" },
+      { src: "images/jogos-tada/tada-gaming-lucky-jaguar.png", alt: "Lucky Jaguar" },
+      { src: "images/jogos-tada/tada-gaming-fortune-gems.png", alt: "Fortune Gems" },
+      { src: "images/jogos-tada/tada-gaming-money-pot-deluxe.png", alt: "Money Pot Deluxe" }
+    ]
+  },
+  {
+    id: "slots-games-global",
+    type: "tournament",
+    title: "Slots Games Global",
+    providerName: "Games Global",
+    startDate: "2026-07-01",
+    endDate: "2026-07-10",
+    prizeLabel: "Total em Prêmios",
+    prizeValue: "R$ 120.000",
+    backgroundImage: "images/bg-banner-games-global.png",
+    providerLogo: "images/logoProvedorGamesGlobal.png",
+    providerLogoClass: "upcoming-promo-card__brand--games-global",
+    playUrl: "#",
+    rulesUrl: "#",
+    gameImages: [
+      { src: "images/jogos-tada/tadagaming-fortune-coins.png", alt: "Fortune Coins" },
+      { src: "images/jogos-tada/tadagaming-fortune-gems.png", alt: "Fortune Gems" },
+      { src: "images/jogos-tada/tadagaming-lucky-macaw.png", alt: "Lucky Macaw" },
+      { src: "images/jogos-tada/tadagaming-money-coming.png", alt: "Money Coming" }
+    ]
+  },
+  {
+    id: "copa-red-tiger",
+    type: "tournament",
+    title: "Copa Red Tiger",
+    providerName: "Red Tiger",
+    startDate: "2026-07-11",
+    endDate: "2026-07-19",
+    prizeLabel: "Total em Prêmios",
+    prizeValue: "R$ 200.000",
+    backgroundImage: "images/bg-banner-red-tiger.png",
+    providerLogo: "images/logoProvedorRedTiger.png",
+    providerLogoClass: "upcoming-promo-card__brand--red-tiger",
+    playUrl: "#",
+    rulesUrl: "#",
+    gameImages: [
+      { src: "images/jogos-tada/tada-gaming-fortune-gems.png", alt: "Fortune Gems" },
+      { src: "images/jogos-tada/tada-gaming-money-pot-deluxe.png", alt: "Money Pot Deluxe" },
+      { src: "images/jogos-tada/tadagaming-lucky-jaguar.png", alt: "Lucky Jaguar" },
+      { src: "images/jogos-tada/tadagaming-money-coming.png", alt: "Money Coming" }
+    ]
+  },
+  {
+    id: "daily-drop-red-tiger",
+    type: "prizeDrop",
+    title: "Daily Drop Red Tiger",
+    providerName: "Red Tiger",
+    startDate: "2026-06-11",
+    endDate: "2026-06-30",
+    prizeLabel: "Total em Prize Drops",
+    prizeValue: "R$ 80.000",
+    backgroundImage: "images/bg-banner-red-tiger.png",
+    providerLogo: "images/logoProvedorRedTiger.png",
+    providerLogoClass: "upcoming-promo-card__brand--red-tiger",
+    playUrl: "#",
+    rulesUrl: "#"
+  },
+  {
+    id: "prize-drop-pragmatic",
+    type: "prizeDrop",
+    title: "Prize Drop Pragmatic",
+    providerName: "Pragmatic Play",
+    startDate: "2026-07-01",
+    endDate: "2026-07-19",
+    prizeLabel: "Total em Prize Drops",
+    prizeValue: "R$ 120.000",
+    backgroundImage: "images/bg-banner-pragmatic.png",
+    providerLogo: "images/logoProvedorPragmatic.png",
+    providerLogoClass: "upcoming-promo-card__brand--pragmatic",
+    playUrl: "#",
+    rulesUrl: "#"
+  }
+];
