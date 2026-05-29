@@ -8,6 +8,11 @@
   --floating-header-bg: #131313;
   --missions-bg: #1a1a1a;
   --mission-card-bg: #202020;
+  --mission-placeholder-bg: #2a2140;
+  --cashback-panel-bg: #1a1a1a;
+  --cashback-match-bg: #202020;
+  --cashback-line-gradient: linear-gradient(90deg, rgba(32, 32, 32, 0) 0%, rgba(51, 51, 51, 0.72) 28%, #333333 42%, #333333 58%, rgba(51, 51, 51, 0.72) 72%, rgba(32, 32, 32, 0) 100%);
+  --cashback-line-shadow: 0 0 8px rgba(51, 51, 51, 0.62);
   --social-icon-bg: #1e1e1e;
   --focus-outline: #ffffff;
   --faq-icon-filter: none;
@@ -32,6 +37,11 @@ html[data-theme="light"] {
   --floating-header-bg: #f3f3f3;
   --missions-bg: #ffffff;
   --mission-card-bg: #f1f1f1;
+  --mission-placeholder-bg: #d8d0ec;
+  --cashback-panel-bg: #ffffff;
+  --cashback-match-bg: #f1f1f1;
+  --cashback-line-gradient: linear-gradient(90deg, rgba(241, 241, 241, 0) 0%, rgba(227, 227, 227, 0.72) 28%, #e3e3e3 42%, #e3e3e3 58%, rgba(227, 227, 227, 0.72) 72%, rgba(241, 241, 241, 0) 100%);
+  --cashback-line-shadow: 0 0 8px rgba(168, 168, 168, 0.32);
   --social-icon-bg: #ffffff;
   --focus-outline: #000000;
   --faq-icon-filter: invert(1);
@@ -458,6 +468,7 @@ html[data-theme="light"] .hero-banner__title span {
 }
 
 .featured-promo__games {
+  --featured-games-gutter: 56px;
   display: flex;
   gap: 12px;
   width: auto;
@@ -482,6 +493,29 @@ html[data-theme="light"] .hero-banner__title span {
   cursor: grabbing;
 }
 
+.featured-promo__games--spotlight {
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  background: none;
+  cursor: default;
+}
+
+.featured-promo__games--aviator::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: var(--featured-games-gutter);
+  left: var(--featured-games-gutter);
+  height: 176px;
+  border-radius: 16px;
+  background: url("../images/imgFundoAviator.png") center / cover no-repeat;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+  transform: translateY(-50%);
+}
+
 .featured-promo__game {
   display: block;
   flex: 0 0 152px;
@@ -491,6 +525,15 @@ html[data-theme="light"] .hero-banner__title span {
   object-fit: cover;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.featured-promo__games--spotlight .featured-promo__game {
+  position: relative;
+  z-index: 1;
+  flex-basis: 150px;
+  width: 150px;
+  height: 216px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
 }
 
 .featured-promo__actions {
@@ -547,6 +590,133 @@ html[data-theme="light"] .featured-promo__button--ended {
 .featured-promo__button:focus-visible {
   outline: 4px solid var(--focus-outline);
   outline-offset: 4px;
+}
+
+.featured-promo--cashback-active {
+  gap: 40px;
+}
+
+.featured-cashback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 572px);
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.78);
+}
+
+.featured-cashback__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 28px;
+  min-width: 0;
+  min-height: 186px;
+}
+
+.featured-cashback__heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.featured-cashback__icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+}
+
+.featured-cashback__title,
+.featured-cashback__description {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.featured-cashback__title {
+  min-width: 0;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.featured-cashback__description {
+  max-width: 560px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.featured-cashback__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.featured-cashback__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  min-height: 48px;
+  border-radius: 100px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.featured-cashback__button--primary {
+  border: 0;
+  background: linear-gradient(17deg, var(--cta-start) 0%, var(--cta-end) 100%);
+}
+
+.featured-cashback__button--secondary {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: transparent;
+}
+
+.featured-cashback__button:focus-visible {
+  outline: 4px solid var(--focus-outline);
+  outline-offset: 4px;
+}
+
+.featured-cashback__match {
+  --cashback-match-bg: #611ea4;
+  --cashback-line-gradient: linear-gradient(90deg, #611ea4 0%, #451476 50%, #611ea4 100%);
+  --cashback-line-shadow: none;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #611ea4;
+  clip-path: inset(0 round 12px);
+}
+
+.featured-cashback__match .cashback-match-card {
+  min-height: 186px;
+  padding: 32px 40px;
+  border-radius: 0;
+  color: #ffffff;
+}
+
+.featured-cashback__match .cashback-match-card__meta {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.featured-cashback__match .cashback-match-card__team,
+.featured-cashback__match .cashback-match-card__vs {
+  color: #ffffff;
 }
 
 .upcoming-promos-section {
@@ -626,6 +796,7 @@ html[data-theme="light"] .featured-promo__button--ended {
   padding: 48px;
   overflow: hidden;
   border-radius: 40px;
+  background: #202020;
   color: #ffffff;
 }
 
@@ -687,6 +858,22 @@ html[data-theme="light"] .featured-promo__button--ended {
 
 .upcoming-promo-card__brand--pragmatic {
   width: 140px;
+}
+
+.upcoming-promo-card__brand--pg-soft {
+  width: 146px;
+}
+
+.upcoming-promo-card__brand--popok {
+  width: 166px;
+}
+
+.upcoming-promo-card__brand--hacksaw {
+  width: 158px;
+}
+
+.upcoming-promo-card__brand--aviator {
+  width: 172px;
 }
 
 .upcoming-promo-card__brand--games-global {
@@ -895,30 +1082,39 @@ html[data-theme="light"] .upcoming-promo-card__button--ended {
 
 .mission-card__media,
 .mission-card__content {
-  flex: 1 1 0;
   min-width: 0;
 }
 
 .mission-card__media {
   position: relative;
+  flex: 0 0 184px;
 }
 
-.mission-card__image {
+.mission-card__image,
+.mission-card__placeholder {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.mission-card__image {
   object-fit: cover;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
 }
 
+.mission-card__placeholder {
+  background: var(--mission-placeholder-bg);
+}
+
 .mission-card__content {
+  flex: 1 1 auto;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   padding: 20px;
 }
 
@@ -928,6 +1124,16 @@ html[data-theme="light"] .upcoming-promo-card__button--ended {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.5;
+}
+
+.mission-card__provider {
+  width: 100%;
+  margin: auto 0 0;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .mission-card__button {
@@ -978,6 +1184,323 @@ html[data-theme="light"] .mission-card__button--ended {
 .mission-card__button:focus-visible {
   outline: 4px solid var(--focus-outline);
   outline-offset: 4px;
+}
+
+.cashback-section {
+  width: 100%;
+  padding: 80px clamp(16px, 4vw, 40px);
+  background: var(--page-bg);
+}
+
+.cashback {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.cashback__heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cashback__icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.cashback__title {
+  margin: 0;
+  color: var(--heading-text);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.cashback__panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  width: 100%;
+  padding: 48px;
+  border-radius: 12px;
+  background: var(--cashback-panel-bg);
+}
+
+.cashback__copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 28px;
+  min-width: 0;
+  min-height: 186px;
+}
+
+.cashback__text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.cashback__headline,
+.cashback__description {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cashback__headline {
+  color: var(--heading-text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cashback__description {
+  max-width: 560px;
+  color: var(--muted-text);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cashback__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cashback__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 144px;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 1px solid var(--heading-text);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--heading-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cashback__button--primary {
+  border: 0;
+  background: linear-gradient(17deg, var(--cta-start) 0%, var(--cta-end) 100%);
+  color: #ffffff;
+}
+
+.cashback__button--secondary {
+  border-color: var(--heading-text);
+  background: transparent;
+}
+
+.cashback__rule {
+  max-width: 176px;
+  margin: 0;
+  color: var(--muted-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cashback__button:focus-visible,
+.cashback__arrow:focus-visible {
+  outline: 4px solid var(--focus-outline);
+  outline-offset: 4px;
+}
+
+.cashback__carousel {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 min(100%, 572px);
+  min-width: 0;
+  min-height: 186px;
+}
+
+.cashback__arrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--heading-text);
+  cursor: pointer;
+}
+
+.cashback__arrow::before {
+  width: 12px;
+  height: 12px;
+  border-top: 3px solid currentColor;
+  border-left: 3px solid currentColor;
+  content: "";
+}
+
+.cashback__arrow--previous::before {
+  transform: translateX(3px) rotate(-45deg);
+}
+
+.cashback__arrow--next::before {
+  transform: translateX(-3px) rotate(135deg);
+}
+
+.cashback__arrow:disabled {
+  opacity: 0.32;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cashback__match-shell {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--cashback-match-bg);
+  clip-path: inset(0 round 12px);
+  touch-action: pan-y;
+  transform: translateZ(0);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cashback__match-shell.is-swiping {
+  cursor: grabbing;
+}
+
+.cashback__track {
+  display: flex;
+  width: 100%;
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.cashback-match-card {
+  display: flex;
+  flex: 0 0 100%;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100%;
+  min-height: 186px;
+  padding: 32px 40px;
+  border-radius: 0;
+  background: var(--cashback-match-bg);
+  color: var(--heading-text);
+}
+
+.cashback-match-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  color: var(--muted-text);
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cashback-match-card__stage {
+  font-size: 12px;
+}
+
+.cashback-match-card__date {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.cashback-match-card__confrontation {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.cashback-match-card__team {
+  margin: 0;
+  color: var(--heading-text);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.cashback-match-card__versus {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 24px;
+}
+
+.cashback-match-card__versus::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--cashback-line-gradient);
+  box-shadow: var(--cashback-line-shadow);
+  content: "";
+  transform: translateY(-50%);
+}
+
+.cashback-match-card__flag {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-50%);
+  -webkit-user-drag: none;
+}
+
+.cashback-match-card__flag--brazil {
+  left: 0;
+}
+
+.cashback-match-card__flag--opponent {
+  right: 0;
+}
+
+.cashback-match-card__vs {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 39px;
+  height: 20px;
+  padding: 0 12px;
+  background: var(--cashback-match-bg);
+  color: var(--heading-text);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .promo-detail {
@@ -1064,6 +1587,7 @@ html[data-theme="light"] .mission-card__button--ended {
   gap: 20px;
   padding: 24px 20px 20px;
   border-bottom: 1px solid var(--divider-color);
+  box-shadow: inset 0 -1px 0 var(--divider-color);
 }
 
 .promo-detail__header-main {
@@ -1210,6 +1734,112 @@ html[data-theme="light"] .mission-card__button--ended {
 
 .promo-detail__step-title + .promo-detail__step-text {
   margin-top: 4px;
+}
+
+.promo-detail__games {
+  display: flex;
+  gap: 10px;
+  margin-right: -20px;
+  margin-left: -20px;
+  padding-right: 20px;
+  padding-left: 20px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 20px;
+  scrollbar-width: none;
+  cursor: grab;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.promo-detail__games::-webkit-scrollbar {
+  display: none;
+}
+
+.promo-detail__games.is-dragging {
+  cursor: grabbing;
+}
+
+.promo-detail__games--spotlight {
+  position: relative;
+  justify-content: center;
+  margin-right: 0;
+  margin-left: 0;
+  min-height: 172px;
+  padding: 18px 20px;
+  overflow: visible;
+  background: none;
+  cursor: default;
+}
+
+.promo-detail__games--aviator::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 112px;
+  border-radius: 12px;
+  background: url("../images/imgFundoAviator.png") center / cover no-repeat;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  transform: translateY(-50%);
+}
+
+.promo-detail__game {
+  display: block;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 136px;
+  border-radius: 8px;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.promo-detail__game-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 136px;
+  min-width: 0;
+}
+
+.promo-detail__game-tile .promo-detail__game {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.promo-detail__game-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 136px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--mission-placeholder-bg);
+  color: var(--heading-text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.promo-detail__game-fallback[hidden] {
+  display: none;
+}
+
+.promo-detail__games--spotlight .promo-detail__game {
+  position: relative;
+  z-index: 1;
+  flex-basis: 96px;
+  width: 96px;
+  height: 136px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
 }
 
 .promo-detail-faq {
@@ -1423,88 +2053,10 @@ html[data-theme="light"] .promo-detail__button--ended {
   }
 }
 
-.faq-section {
-  width: 100%;
-  padding: 80px clamp(16px, 4vw, 40px);
-  border-bottom: 1px solid var(--divider-color);
-}
-
-.faq {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.faq__item {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-.faq__item:not(:first-child) {
-  padding-top: 40px;
-  border-top: 1px solid var(--divider-color);
-}
-
-.faq__button {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--heading-text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.faq__question {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-.faq__icon {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  filter: var(--faq-icon-filter);
-  transform: rotate(180deg);
-  transition: transform 220ms ease-in-out;
-}
-
-.faq__item.is-open .faq__icon {
-  transform: rotate(0);
-}
-
-.faq__panel[hidden] {
-  display: none;
-}
-
-.faq__answer {
-  margin: 0;
-  color: var(--muted-text);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.faq__button:focus-visible {
-  outline: 4px solid var(--focus-outline);
-  outline-offset: 4px;
-}
-
 .site-footer {
   width: 100%;
   padding: 80px clamp(16px, 4vw, 40px);
+  border-top: 1px solid var(--divider-color);
   color: var(--heading-text);
 }
 
@@ -1617,17 +2169,28 @@ html[data-theme="light"] .site-footer__age-icon {
   text-align: right;
 }
 
+.site-footer__app-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .site-footer__app-link {
   display: inline-flex;
-  width: 108px;
+  align-items: center;
   height: 40px;
 }
 
 .site-footer__app-image {
   display: block;
-  width: 108px;
+  width: auto;
   height: 40px;
   object-fit: contain;
+}
+
+.site-footer__app-image--app-store {
+  height: 32px;
 }
 
 .site-footer__pix-logo,
@@ -1725,11 +2288,21 @@ html[data-theme="light"] .site-footer__age-icon {
   }
 
   .featured-promo__games {
+    --featured-games-gutter: 40px;
     margin-right: -40px;
     margin-left: -40px;
     padding-right: 40px;
     padding-left: 40px;
     scroll-padding-inline: 40px;
+  }
+
+  .featured-cashback {
+    gap: 32px;
+  }
+
+  .featured-cashback__match .cashback-match-card {
+    padding-right: 32px;
+    padding-left: 32px;
   }
 
   .upcoming-promos {
@@ -1760,6 +2333,19 @@ html[data-theme="light"] .site-footer__age-icon {
 
   .missions__grid {
     gap: 24px;
+  }
+
+  .cashback__panel {
+    gap: 28px;
+  }
+
+  .cashback__carousel {
+    flex-basis: min(100%, 520px);
+  }
+
+  .cashback-match-card {
+    padding-right: 32px;
+    padding-left: 32px;
   }
 
   .site-footer__links {
@@ -1888,6 +2474,7 @@ html[data-theme="light"] .site-footer__age-icon {
   }
 
   .featured-promo__games {
+    --featured-games-gutter: 32px;
     width: auto;
     margin-right: -32px;
     margin-left: -32px;
@@ -1907,6 +2494,32 @@ html[data-theme="light"] .site-footer__age-icon {
   }
 
   .featured-promo__button {
+    flex: 1 1 0;
+    width: auto;
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  .featured-promo--cashback-active {
+    gap: 32px;
+  }
+
+  .featured-cashback {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-bottom: 32px;
+  }
+
+  .featured-cashback__title {
+    font-size: 28px;
+    line-height: 1.25;
+  }
+
+  .featured-cashback__actions {
+    width: 100%;
+  }
+
+  .featured-cashback__button {
     flex: 1 1 0;
     width: auto;
     min-height: 44px;
@@ -1998,12 +2611,39 @@ html[data-theme="light"] .site-footer__age-icon {
     height: 184px;
   }
 
-  .faq-section {
-    padding: 56px 32px 64px;
+  .cashback-section {
+    padding: 56px 32px;
   }
 
-  .faq__question {
-    font-size: 20px;
+  .cashback {
+    gap: 32px;
+  }
+
+  .cashback__title {
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .cashback__panel {
+    flex-direction: column;
+    gap: 32px;
+    padding: 28px;
+  }
+
+  .cashback__copy {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .cashback__carousel {
+    width: 100%;
+    flex-basis: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .cashback__arrow {
+    display: none;
   }
 
   .site-footer {
@@ -2185,6 +2825,7 @@ html[data-theme="light"] .site-footer__age-icon {
   }
 
   .featured-promo__games {
+    --featured-games-gutter: 20px;
     width: auto;
     margin-right: -20px;
     margin-left: -20px;
@@ -2208,6 +2849,33 @@ html[data-theme="light"] .site-footer__age-icon {
     width: auto;
     min-height: 40px;
     font-size: 12px;
+  }
+
+  .featured-cashback__heading {
+    gap: 12px;
+  }
+
+  .featured-cashback__icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .featured-cashback__title {
+    font-size: 24px;
+  }
+
+  .featured-cashback__description {
+    font-size: 14px;
+  }
+
+  .featured-cashback__button {
+    min-height: 40px;
+    font-size: 12px;
+  }
+
+  .featured-cashback__match .cashback-match-card {
+    min-height: 176px;
+    padding: 24px 20px;
   }
 
   .upcoming-promos-section {
@@ -2256,6 +2924,22 @@ html[data-theme="light"] .site-footer__age-icon {
 
   .upcoming-promo-card__brand--pragmatic {
     width: 120px;
+  }
+
+  .upcoming-promo-card__brand--pg-soft {
+    width: 128px;
+  }
+
+  .upcoming-promo-card__brand--popok {
+    width: 144px;
+  }
+
+  .upcoming-promo-card__brand--hacksaw {
+    width: 136px;
+  }
+
+  .upcoming-promo-card__brand--aviator {
+    width: 148px;
   }
 
   .upcoming-promo-card__brand--games-global {
@@ -2323,6 +3007,10 @@ html[data-theme="light"] .site-footer__age-icon {
     height: 160px;
   }
 
+  .mission-card__media {
+    flex-basis: 160px;
+  }
+
   .mission-card__content {
     padding: 16px;
   }
@@ -2331,33 +3019,84 @@ html[data-theme="light"] .site-footer__age-icon {
     font-size: 12px;
   }
 
-  .faq-section {
-    padding: 56px 20px 64px;
+  .mission-card__provider {
+    font-size: 11px;
   }
 
-  .faq {
-    gap: 32px;
+  .cashback-section {
+    padding: 56px 20px;
   }
 
-  .faq__item:not(:first-child) {
-    padding-top: 32px;
+  .cashback {
+    gap: 24px;
   }
 
-  .faq__button {
-    gap: 16px;
+  .cashback__heading {
+    gap: 12px;
   }
 
-  .faq__question {
-    font-size: 16px;
+  .cashback__icon {
+    width: 28px;
+    height: 28px;
   }
 
-  .faq__icon {
-    width: 32px;
-    height: 32px;
+  .cashback__panel {
+    gap: 28px;
+    padding: 20px;
   }
 
-  .faq__answer {
+  .cashback__headline {
+    font-size: 18px;
+  }
+
+  .cashback__description {
+    font-size: 14px;
+  }
+
+  .cashback__actions {
+    width: 100%;
+  }
+
+  .cashback__button {
+    width: 100%;
+    min-height: 44px;
     font-size: 12px;
+  }
+
+  .cashback__rule {
+    width: 100%;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .cashback__carousel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .cashback-match-card {
+    min-height: 176px;
+    padding: 24px 20px;
+  }
+
+  .cashback-match-card__meta {
+    align-items: center;
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+  }
+
+  .cashback-match-card__date {
+    white-space: normal;
+  }
+
+  .cashback-match-card__team {
+    font-size: 20px;
+  }
+
+  .cashback-match-card__flag {
+    width: 44px;
+    height: 44px;
   }
 
   .site-footer {

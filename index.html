@@ -18,13 +18,13 @@
       document.documentElement.dataset.theme = theme;
     }());
   </script>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=copa-cashback-rules">
 </head>
 <body>
   <header class="site-header" aria-label="Cabeçalho principal">
     <div class="site-header__inner">
-      <a class="site-header__logo-link" href="#" aria-label="Rei do Pitaco">
-        <img class="site-header__logo" src="images/logoReiPitacoDark.svg" data-theme-src-dark="images/logoReiPitacoDark.svg" data-theme-src-light="images/logoReiPitacoLight.svg" alt="Rei do Pitaco">
+      <a class="site-header__logo-link" href="#" aria-label="Pitaco">
+        <img class="site-header__logo" src="images/logoPitacoDark.svg" data-theme-src-dark="images/logoPitacoDark.svg" data-theme-src-light="images/logoPitacoLight.png" alt="Pitaco">
       </a>
 
       <a class="site-header__cta" href="#">
@@ -45,7 +45,7 @@
         <p class="hero-banner__tag">Calendário da Copa</p>
 
         <h1 class="hero-banner__title" id="hero-title">
-          Mais de <span>R$ 1.000.000</span><br>
+          Mais de <span>R$ 1.200.000</span><br>
           em prêmios durante a Copa!
         </h1>
       </div>
@@ -59,7 +59,7 @@
       <div class="upcoming-promos">
         <div class="upcoming-promos__intro">
           <div class="upcoming-promos__heading">
-            <img class="upcoming-promos__icon" src="images/icon-mais-promocoes.png" alt="">
+            <img class="upcoming-promos__icon" src="images/icon-mais-promocoes.png?v=icons-20260529" alt="">
             <h2 class="upcoming-promos__title" id="upcoming-promos-title">Mais Promoções</h2>
           </div>
 
@@ -73,7 +73,7 @@
     <section class="missions-section" aria-labelledby="missions-title">
       <div class="missions">
         <div class="missions__heading">
-          <img class="missions__icon" src="images/icon-missoes.png" alt="">
+          <img class="missions__icon" src="images/icon-missoes.png?v=icons-20260529" alt="">
           <h2 class="missions__title" id="missions-title">Não esqueça das Missões</h2>
         </div>
 
@@ -81,64 +81,36 @@
       </div>
     </section>
 
-    <section class="faq-section" aria-label="FAQ">
-      <div class="faq">
-        <div class="faq__item is-open">
-          <button class="faq__button" type="button" id="faq-trigger-1" aria-expanded="true" aria-controls="faq-panel-1">
-            <span class="faq__question">Como faço para participar das promoções do Calendário da Copa?</span>
-            <img class="faq__icon" src="images/icon-accordion.svg" alt="">
-          </button>
-
-          <div class="faq__panel" id="faq-panel-1" aria-labelledby="faq-trigger-1">
-            <p class="faq__answer">Escolha uma promoção ativa, jogue no Rei do Pitaco dentro do período indicado e cumpra as regras da campanha.</p>
-          </div>
+    <section class="cashback-section" aria-labelledby="cashback-title" data-cashback-section>
+      <div class="cashback">
+        <div class="cashback__heading">
+          <img class="cashback__icon" src="images/icon-cashback.png?v=icons-20260529" alt="">
+          <h2 class="cashback__title" id="cashback-title" data-cashback-title>Cashback da Copa</h2>
         </div>
 
-        <div class="faq__item">
-          <button class="faq__button" type="button" id="faq-trigger-2" aria-expanded="false" aria-controls="faq-panel-2">
-            <span class="faq__question">Até quando posso participar de cada promoção?</span>
-            <img class="faq__icon" src="images/icon-accordion.svg" alt="">
-          </button>
+        <div class="cashback__panel">
+          <div class="cashback__copy">
+            <div class="cashback__text-group">
+              <p class="cashback__headline" data-cashback-headline>Brasil ou final: cashback de 30%</p>
+              <p class="cashback__description" data-cashback-description>Nos dias de jogo do Brasil e no dia da final, jogue nos jogos de cassino participantes e receba 30% das perdas líquidas em Pitacoins.</p>
+            </div>
 
-          <div class="faq__panel" id="faq-panel-2" aria-labelledby="faq-trigger-2" hidden>
-            <p class="faq__answer">Cada promoção tem seu próprio período de participação. Confira sempre a data exibida no card antes de jogar.</p>
+            <div class="cashback__actions">
+              <a class="cashback__button cashback__button--primary" href="#" data-cashback-play>Jogar Agora</a>
+              <button class="cashback__button cashback__button--secondary" type="button" data-promo-detail-id="cashback-brasil">Saiba Mais</button>
+              <p class="cashback__rule">Demais dias da Copa:<br>20% de cashback</p>
+            </div>
           </div>
-        </div>
 
-        <div class="faq__item">
-          <button class="faq__button" type="button" id="faq-trigger-3" aria-expanded="false" aria-controls="faq-panel-3">
-            <span class="faq__question">Quais jogos ou torneios valem para as promoções?</span>
-            <img class="faq__icon" src="images/icon-accordion.svg" alt="">
-          </button>
-
-          <div class="faq__panel" id="faq-panel-3" aria-labelledby="faq-trigger-3" hidden>
-            <p class="faq__answer">Valem apenas os jogos, torneios e provedores destacados em cada promoção, como TaDa Gaming, Red Tiger, Pragmatic Play e Games Global.</p>
-          </div>
-        </div>
-
-        <div class="faq__item">
-          <button class="faq__button" type="button" id="faq-trigger-4" aria-expanded="false" aria-controls="faq-panel-4">
-            <span class="faq__question">Como funciona a premiação?</span>
-            <img class="faq__icon" src="images/icon-accordion.svg" alt="">
-          </button>
-
-          <div class="faq__panel" id="faq-panel-4" aria-labelledby="faq-trigger-4" hidden>
-            <p class="faq__answer">A premiação muda conforme a campanha e pode incluir torneios, prize drops ou rodadas grátis. O total disponível aparece em cada card.</p>
-          </div>
-        </div>
-
-        <div class="faq__item">
-          <button class="faq__button" type="button" id="faq-trigger-5" aria-expanded="false" aria-controls="faq-panel-5">
-            <span class="faq__question">Quando o prêmio será creditado?</span>
-            <img class="faq__icon" src="images/icon-accordion.svg" alt="">
-          </button>
-
-          <div class="faq__panel" id="faq-panel-5" aria-labelledby="faq-trigger-5" hidden>
-            <p class="faq__answer">Depois que os requisitos forem cumpridos, o prêmio será creditado conforme as regras e os prazos da promoção correspondente.</p>
+          <div class="cashback__carousel" aria-label="Jogos com cashback na Copa">
+            <button class="cashback__arrow cashback__arrow--previous" type="button" aria-label="Jogo anterior" data-cashback-prev></button>
+            <div class="cashback__match-shell" aria-live="polite" data-cashback-match></div>
+            <button class="cashback__arrow cashback__arrow--next" type="button" aria-label="Próximo jogo" data-cashback-next></button>
           </div>
         </div>
       </div>
     </section>
+
   </main>
 
   <footer class="site-footer" aria-label="Rodapé">
@@ -209,7 +181,7 @@
           <img class="site-footer__age-icon" src="images/icon-mais-18.svg" alt="Apenas para maiores de 18 anos">
 
           <p class="site-footer__authorized-text">
-            O Rei do Pitaco (MMD TECNOLOGIA, ENTRETENIMENTO E MARKETING LTDA), com sede na Rua Joaquim Antunes, n° 470, Pinheiros, Município de São Paulo/SP, CEP 05.415-001, é autorizado no Brasil através da Portaria SPA/MF no. 2.091/2024, em total conformidade com as leis nacionais.
+            O Pitaco (MMD TECNOLOGIA, ENTRETENIMENTO E MARKETING LTDA), com sede na Rua Joaquim Antunes, n° 470, Pinheiros, Município de São Paulo/SP, CEP 05.415-001, é autorizado no Brasil através da Portaria SPA/MF no. 2.091/2024, em total conformidade com as leis nacionais.
           </p>
 
           <p class="site-footer__authorized-text">
@@ -222,11 +194,17 @@
 
       <div class="site-footer__trust" aria-label="Selos e parceiros">
         <div class="site-footer__trust-group site-footer__trust-group--apps">
-          <h2 class="site-footer__title">Aplicativos do Rei</h2>
+          <h2 class="site-footer__title">Aplicativos do Pitaco</h2>
 
-          <a class="site-footer__app-link" href="https://play.google.com/store/apps/details?id=br.bet.reidopitaco" target="_blank" rel="noopener noreferrer" aria-label="Baixar na Google Play">
-            <img class="site-footer__app-image" src="images/logo-baixe-app.png" alt="Disponível no Google Play">
-          </a>
+          <div class="site-footer__app-links">
+            <a class="site-footer__app-link" href="https://play.google.com/store/apps/details?id=br.bet.reidopitaco" target="_blank" rel="noopener noreferrer" aria-label="Baixar na Google Play">
+              <img class="site-footer__app-image" src="images/logo-baixe-app.png" alt="Disponível no Google Play">
+            </a>
+
+            <a class="site-footer__app-link" href="https://apps.apple.com/br/app/pitaco-apostas/id1472531187" target="_blank" rel="noopener noreferrer" aria-label="Baixar na App Store">
+              <img class="site-footer__app-image site-footer__app-image--app-store" src="images/tag-app-store.png" alt="Baixar na App Store">
+            </a>
+          </div>
         </div>
 
         <div class="site-footer__trust-group site-footer__trust-group--deposit">
@@ -243,7 +221,7 @@
       </div>
 
       <div class="site-footer__bottom">
-        <a class="site-footer__brand-link" href="https://www.reidopitaco.com/" aria-label="Rei do Pitaco">
+        <a class="site-footer__brand-link" href="https://www.reidopitaco.com/" aria-label="Pitaco">
           <img class="site-footer__brand-icon" src="images/icon-degrade-footer.svg" alt="">
         </a>
 
@@ -285,8 +263,9 @@
     </aside>
   </div>
 
-  <script src="js/promotions.js"></script>
-  <script src="js/missions.js"></script>
-  <script src="js/script.js"></script>
+  <script src="js/promotions.js?v=games-global-gol-de-ouro"></script>
+  <script src="js/missions.js?v=missions-provider"></script>
+  <script src="js/cashback.js?v=copa-cashback-rules"></script>
+  <script src="js/script.js?v=copa-cashback-rules"></script>
 </body>
 </html>

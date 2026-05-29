@@ -1,10 +1,22 @@
 const promotions = Array.isArray(window.COPA_PROMOTIONS) ? window.COPA_PROMOTIONS : [];
 const missions = Array.isArray(window.COPA_MISSIONS) ? window.COPA_MISSIONS : [];
+const cashbackPromotion = window.COPA_CASHBACK_PROMOTION || null;
+const fallbackCashbackMatches = Array.isArray(window.COPA_CASHBACK_MATCHES) ? window.COPA_CASHBACK_MATCHES : [];
+const cashbackCountries = window.COPA_CASHBACK_COUNTRIES || {};
 const featuredPromoSection = document.querySelector("[data-featured-promo-section]");
 const featuredPromoRoot = document.querySelector("[data-featured-promo]");
 const promosDescription = document.querySelector("[data-promos-description]");
 const promosList = document.querySelector("[data-promos-list]");
+const missionsSection = document.querySelector(".missions-section");
 const missionsList = document.querySelector("[data-missions-list]");
+const cashbackSection = document.querySelector("[data-cashback-section]");
+const cashbackTitle = document.querySelector("[data-cashback-title]");
+const cashbackHeadline = document.querySelector("[data-cashback-headline]");
+const cashbackDescription = document.querySelector("[data-cashback-description]");
+const cashbackPlayLink = document.querySelector("[data-cashback-play]");
+const cashbackMatchRoot = document.querySelector("[data-cashback-match]");
+const cashbackPreviousButton = document.querySelector("[data-cashback-prev]");
+const cashbackNextButton = document.querySelector("[data-cashback-next]");
 const promoDetailRoot = document.querySelector("[data-promo-detail]");
 const promoDetailHeader = document.querySelector("[data-promo-detail-header]");
 const promoDetailBody = document.querySelector("[data-promo-detail-body]");
@@ -16,6 +28,77 @@ const saoPauloDateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo"
 });
 const dayMs = 24 * 60 * 60 * 1000;
+const cashbackBrazilTeam = {
+  abbreviation: "BRA",
+  name: "Brasil",
+  flagSlug: "brasil"
+};
+const cashbackFallbackFlag = "images/iconPaises/fallback.png";
+const cashbackScoreboardUrl = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=200";
+const cashbackRefreshMs = 5 * 60 * 1000;
+const cashbackCopy = {
+  section: {
+    title: "Cashback da Copa",
+    headline: "Brasil ou final: cashback de 30%",
+    description: "Nos dias de jogo do Brasil e no dia da final, jogue nos jogos de cassino participantes e receba 30% das perdas líquidas em Pitacoins."
+  },
+  default: {
+    title: "Cashback de 30%",
+    headline: "Quando o Brasil joga, seu cashback vem turbinado.",
+    description: "Nos dias em que o Brasil entrar em campo, jogue nos jogos de cassino participantes e receba 30% das suas perdas líquidas em Pitacoins no dia seguinte.",
+    featuredTitle: "É hoje: cashback de 30%",
+    featuredDescription: "A Seleção joga hoje. Jogue nos jogos de cassino participantes e receba 30% das perdas líquidas em Pitacoins.",
+    featuredMatchLabel: "Jogo do Brasil de hoje"
+  },
+  final: {
+    title: "Final com cashback de 30%",
+    headline: "A grande final também entra na promoção.",
+    description: "No dia da grande final, jogue nos jogos de cassino participantes e receba 30% das suas perdas líquidas em Pitacoins no dia seguinte.",
+    featuredTitle: "É hoje: cashback de 30%",
+    featuredDescription: "A grande final é hoje. Jogue nos jogos de cassino participantes e receba 30% das perdas líquidas em Pitacoins.",
+    featuredMatchLabel: "Jogo da final de hoje"
+  }
+};
+const cashbackGroupTeams = {
+  C: ["BRA", "MAR", "HAI", "SCO"],
+  F: ["NED", "JPN", "SWE", "TUN"]
+};
+const cashbackRoundNumbersByEventId = {
+  760486: { round: "R32", number: 1 },
+  760487: { round: "R32", number: 2 },
+  760489: { round: "R32", number: 3 },
+  760488: { round: "R32", number: 4 },
+  760490: { round: "R32", number: 5 },
+  760492: { round: "R32", number: 6 },
+  760491: { round: "R32", number: 7 },
+  760495: { round: "R32", number: 8 },
+  760493: { round: "R32", number: 9 },
+  760494: { round: "R32", number: 10 },
+  760497: { round: "R32", number: 11 },
+  760496: { round: "R32", number: 12 },
+  760498: { round: "R32", number: 13 },
+  760499: { round: "R32", number: 14 },
+  760500: { round: "R32", number: 15 },
+  760501: { round: "R32", number: 16 },
+  760502: { round: "R16", number: 1 },
+  760503: { round: "R16", number: 2 },
+  760504: { round: "R16", number: 3 },
+  760505: { round: "R16", number: 4 },
+  760506: { round: "R16", number: 5 },
+  760507: { round: "R16", number: 6 },
+  760509: { round: "R16", number: 7 },
+  760508: { round: "R16", number: 8 },
+  760510: { round: "QF", number: 1 },
+  760511: { round: "QF", number: 2 },
+  760512: { round: "QF", number: 3 },
+  760513: { round: "QF", number: 4 },
+  760514: { round: "SF", number: 1 },
+  760515: { round: "SF", number: 2 }
+};
+const cashbackState = {
+  matches: fallbackCashbackMatches.map(normalizeFallbackCashbackMatch),
+  currentIndex: 0
+};
 let promotionCountdownTimeoutId;
 let promoDetailCloseFocusTarget;
 let activePromoDetailId;
@@ -27,6 +110,30 @@ function getThemeParam() {
   const themeParam = new URLSearchParams(window.location.search).get("theme");
 
   return themeParam === "light" || themeParam === "dark" ? themeParam : null;
+}
+
+function getPreviewDateOverride() {
+  const params = new URLSearchParams(window.location.search);
+  const previewDateParam = params.get("previewDate") || params.get("cashbackDate");
+
+  if (!previewDateParam) {
+    return null;
+  }
+
+  const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(previewDateParam)
+    ? new Date(`${previewDateParam}T12:00:00-03:00`)
+    : new Date(previewDateParam);
+
+  return Number.isNaN(dateValue.getTime()) ? null : dateValue;
+}
+
+const previewDateOverride = getPreviewDateOverride();
+const previewDateStartTime = previewDateOverride ? Date.now() : 0;
+
+function getCurrentDate() {
+  return previewDateOverride
+    ? new Date(previewDateOverride.getTime() + Date.now() - previewDateStartTime)
+    : new Date();
 }
 
 function getPreferredTheme() {
@@ -83,6 +190,56 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function getSaoPauloDateParts(date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "America/Sao_Paulo"
+  }).formatToParts(date).reduce((parts, part) => {
+    if (part.type !== "literal") {
+      parts[part.type] = part.value;
+    }
+
+    return parts;
+  }, {});
+}
+
+function getSaoPauloDateKey(date) {
+  const parts = getSaoPauloDateParts(date);
+
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function formatCashbackMatchDate(value) {
+  const parts = getSaoPauloDateParts(new Date(value));
+
+  return `${parts.day}/${parts.month}/${parts.year}, ${parts.hour}h${parts.minute}`;
+}
+
+function formatCashbackMatchToday(value) {
+  const parts = getSaoPauloDateParts(new Date(value));
+
+  return `Hoje, ${parts.hour}h${parts.minute}`;
+}
+
+function getFlagSource(flagSlug) {
+  return flagSlug ? `images/iconPaises/${flagSlug}.png` : cashbackFallbackFlag;
+}
+
+function getCountryInfo(abbreviation, fallbackName) {
+  const country = cashbackCountries[abbreviation];
+
+  return {
+    abbreviation,
+    name: country?.name || fallbackName || abbreviation || "A definir",
+    flagSlug: country?.flagSlug
+  };
+}
+
 function getItemStart(item) {
   return new Date(`${item.startDate}T00:00:00-03:00`);
 }
@@ -91,7 +248,7 @@ function getItemEnd(item) {
   return new Date(`${item.endDate}T23:59:59-03:00`);
 }
 
-function getItemStatus(item, now = new Date()) {
+function getItemStatus(item, now = getCurrentDate()) {
   const startDate = getItemStart(item);
   const endDate = getItemEnd(item);
 
@@ -114,7 +271,7 @@ function getPromotionEnd(promotion) {
   return getItemEnd(promotion);
 }
 
-function getPromotionStatus(promotion, now = new Date()) {
+function getPromotionStatus(promotion, now = getCurrentDate()) {
   return getItemStatus(promotion, now);
 }
 
@@ -123,6 +280,10 @@ function formatDate(date) {
 }
 
 function formatPromotionPeriod(promotion) {
+  if (promotion.periodText) {
+    return promotion.periodText;
+  }
+
   return `${formatDate(getPromotionStart(promotion))} À ${formatDate(getPromotionEnd(promotion))}`;
 }
 
@@ -139,7 +300,7 @@ function formatClockCountdown(timeLeft) {
   return `${String(hours).padStart(2, "0")}h:${String(minutes).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`;
 }
 
-function formatRemainingTime(targetDate, now = new Date()) {
+function formatRemainingTime(targetDate, now = getCurrentDate()) {
   const timeLeft = targetDate.getTime() - now.getTime();
 
   if (timeLeft <= dayMs) {
@@ -151,7 +312,7 @@ function formatRemainingTime(targetDate, now = new Date()) {
   return `${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`;
 }
 
-function getStatusViewModel(promotion, now = new Date()) {
+function getStatusViewModel(promotion, now = getCurrentDate()) {
   const status = getPromotionStatus(promotion, now);
 
   if (status === "upcoming") {
@@ -196,6 +357,58 @@ function getStatusCardClass(status) {
   return "upcoming-promo-card--active";
 }
 
+document.addEventListener("error", (event) => {
+  const image = event.target;
+
+  if (image instanceof HTMLImageElement && image.matches("[data-country-flag]")) {
+    const fallbackSource = image.dataset.countryFallback;
+
+    if (fallbackSource && image.getAttribute("src") !== fallbackSource) {
+      image.setAttribute("src", fallbackSource);
+      return;
+    }
+
+    image.hidden = true;
+    return;
+  }
+
+  if (image instanceof HTMLImageElement && image.matches("[data-optional-game-image]")) {
+    const gameTile = image.closest(".promo-detail__game-tile");
+
+    if (gameTile) {
+      const fallback = gameTile.querySelector(".promo-detail__game-fallback");
+
+      image.remove();
+
+      if (fallback) {
+        fallback.hidden = false;
+      }
+
+      return;
+    }
+
+    const gamesContainer = image.closest(".featured-promo__games, .promo-detail__games");
+
+    image.remove();
+
+    if (gamesContainer && !gamesContainer.querySelector("img, .promo-detail__game-fallback:not([hidden])")) {
+      const gamesSection = gamesContainer.closest(".promo-detail__section");
+
+      if (gamesSection) {
+        gamesSection.remove();
+      } else {
+        gamesContainer.remove();
+      }
+    }
+  }
+}, true);
+
+function getPromotionDisplayPriority(promotion) {
+  const priority = Number(promotion.displayPriority);
+
+  return Number.isFinite(priority) ? priority : Number.POSITIVE_INFINITY;
+}
+
 function getPrimaryButton(promotion, status, classPrefix) {
   const className = `${classPrefix}__button`;
 
@@ -224,6 +437,14 @@ function hasPromotionDetails(promotion) {
   return Array.isArray(details.howItWorks) || Array.isArray(details.faq) || Boolean(details.termsSummary);
 }
 
+function getPromotionById(promotionId) {
+  if (cashbackPromotion && cashbackPromotion.id === promotionId) {
+    return cashbackPromotion;
+  }
+
+  return promotions.find((currentPromotion) => currentPromotion.id === promotionId);
+}
+
 function getSecondaryButton(promotion, classPrefix) {
   const className = `${classPrefix}__button ${classPrefix}__button--secondary`;
 
@@ -238,15 +459,25 @@ function getSecondaryButton(promotion, classPrefix) {
   return `<a class="${className}" href="${escapeHtml(promotion.rulesUrl)}">Saiba Mais</a>`;
 }
 
+function getGameDisplayMode(promotion) {
+  if (promotion.gameDisplay === "spotlight") {
+    return "spotlight";
+  }
+
+  const games = Array.isArray(promotion.gameImages) ? promotion.gameImages : [];
+
+  return games.length === 1 ? "spotlight" : "carousel";
+}
+
 function getMissionButton(mission, status) {
   const className = "mission-card__button";
 
   if (status === "active") {
     if (mission.playUrl) {
-      return `<a class="${className} ${className}--primary" href="${escapeHtml(mission.playUrl)}">Jogar</a>`;
+      return `<a class="${className} ${className}--primary" href="${escapeHtml(mission.playUrl)}">Acessar</a>`;
     }
 
-    return `<span class="${className} ${className}--primary" aria-disabled="true">Jogar</span>`;
+    return `<span class="${className} ${className}--primary" aria-disabled="true">Acessar</span>`;
   }
 
   if (status === "upcoming") {
@@ -256,10 +487,25 @@ function getMissionButton(mission, status) {
   return `<span class="${className} ${className}--ended" aria-disabled="true">Finalizada</span>`;
 }
 
-function getFeaturedPromotion(now = new Date()) {
+function getFeaturedPromotion(now = getCurrentDate()) {
   const tournaments = promotions
-    .filter((promotion) => promotion.type === "tournament")
-    .sort((first, second) => getPromotionStart(first) - getPromotionStart(second));
+    .filter((promotion) => promotion.type === "tournament" && promotion.neverFeatured !== true)
+    .sort((first, second) => {
+      const firstPriority = getPromotionDisplayPriority(first);
+      const secondPriority = getPromotionDisplayPriority(second);
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
+      }
+
+      return getPromotionStart(first) - getPromotionStart(second);
+    });
+  const forcedTournament = tournaments.find((promotion) => promotion.forceFeatured === true);
+
+  if (forcedTournament) {
+    return forcedTournament;
+  }
+
   const activeTournament = tournaments.find((promotion) => getPromotionStatus(promotion, now) === "active");
 
   if (activeTournament) {
@@ -269,7 +515,7 @@ function getFeaturedPromotion(now = new Date()) {
   return tournaments.find((promotion) => getPromotionStatus(promotion, now) === "upcoming") || tournaments[tournaments.length - 1];
 }
 
-function getSortedMissions(now = new Date()) {
+function getSortedMissions(now = getCurrentDate()) {
   const statusOrder = {
     active: 0,
     upcoming: 1,
@@ -295,7 +541,7 @@ function getSortedMissions(now = new Date()) {
     .map(({ mission }) => mission);
 }
 
-function getSortedPromotions(featuredPromotion, now = new Date()) {
+function getSortedPromotions(featuredPromotion, now = getCurrentDate()) {
   return promotions
     .filter((promotion) => !featuredPromotion || promotion.id !== featuredPromotion.id)
     .map((promotion) => ({
@@ -310,15 +556,27 @@ function getSortedPromotions(featuredPromotion, now = new Date()) {
         return firstEnded ? 1 : -1;
       }
 
-      const firstActivePrizeDrop = first.promotion.type === "prizeDrop" && first.status === "active";
-      const secondActivePrizeDrop = second.promotion.type === "prizeDrop" && second.status === "active";
+      if (!firstEnded && !secondEnded) {
+        const startDelta = getPromotionStart(first.promotion) - getPromotionStart(second.promotion);
 
-      if (firstActivePrizeDrop !== secondActivePrizeDrop) {
-        return firstActivePrizeDrop ? -1 : 1;
+        if (startDelta !== 0) {
+          return startDelta;
+        }
       }
 
       if (firstEnded && secondEnded) {
-        return getPromotionEnd(first.promotion) - getPromotionEnd(second.promotion);
+        const endDelta = getPromotionEnd(first.promotion) - getPromotionEnd(second.promotion);
+
+        if (endDelta !== 0) {
+          return endDelta;
+        }
+      }
+
+      const firstPriority = getPromotionDisplayPriority(first.promotion);
+      const secondPriority = getPromotionDisplayPriority(second.promotion);
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
       }
 
       return getPromotionStart(first.promotion) - getPromotionStart(second.promotion);
@@ -326,26 +584,754 @@ function getSortedPromotions(featuredPromotion, now = new Date()) {
     .map(({ promotion }) => promotion);
 }
 
-function renderMissionCard(mission, now = new Date()) {
+function normalizeFallbackCashbackMatch(match) {
+  const teams = Array.isArray(match.teams) && match.teams.length >= 2
+    ? match.teams
+    : [
+        cashbackBrazilTeam,
+        {
+          abbreviation: match.opponent?.abbreviation || "",
+          name: match.opponent?.name || "A definir",
+          flagSlug: match.opponent?.flagSlug
+        }
+      ];
+
+  return {
+    id: match.id,
+    espnEventId: match.espnEventId,
+    date: match.date,
+    stage: match.stage,
+    isFinal: match.isFinal === true || String(match.stage || "").trim().toLowerCase() === "final",
+    teams,
+    brazil: teams[0],
+    opponent: teams[1],
+    source: "fallback"
+  };
+}
+
+function isBrazilTeam(team) {
+  return team?.abbreviation === "BRA" || team?.name === "Brasil" || team?.displayName === "Brazil";
+}
+
+function isCashbackFinalEvent(event) {
+  return event?.season?.slug === "final" || getCashbackStageLabel(event) === "Final";
+}
+
+function isCashbackFinalMatch(match) {
+  return match?.isFinal === true || String(match?.stage || "").trim().toLowerCase() === "final";
+}
+
+function getCashbackCopy(match) {
+  return isCashbackFinalMatch(match) ? cashbackCopy.final : cashbackCopy.default;
+}
+
+function updateCashbackSectionCopy() {
+  const copy = cashbackCopy.section;
+
+  if (cashbackTitle) {
+    cashbackTitle.textContent = copy.title;
+  }
+
+  if (cashbackHeadline) {
+    cashbackHeadline.textContent = copy.headline;
+  }
+
+  if (cashbackDescription) {
+    cashbackDescription.textContent = copy.description;
+  }
+
+  if (cashbackPlayLink && cashbackPromotion?.playUrl) {
+    cashbackPlayLink.setAttribute("href", cashbackPromotion.playUrl);
+  }
+}
+
+function getCashbackStageLabel(event) {
+  const eventId = String(event.id);
+  const fallbackMatch = fallbackCashbackMatches.find((match) => match.espnEventId === eventId);
+
+  if (fallbackMatch?.stage) {
+    return fallbackMatch.stage;
+  }
+
+  const slug = event.season?.slug;
+
+  if (slug === "round-of-32") {
+    return "Mata-mata - 16 avos";
+  }
+
+  if (slug === "round-of-16") {
+    return "Oitavas de Final";
+  }
+
+  if (slug === "quarterfinals") {
+    return "Quartas de Final";
+  }
+
+  if (slug === "semifinals") {
+    return "Semifinal";
+  }
+
+  if (slug === "3rd-place-match") {
+    return "Disputa de 3º Lugar";
+  }
+
+  if (slug === "final") {
+    return "Final";
+  }
+
+  return "Fase de Grupos";
+}
+
+function getCashbackWinnerSlot(round, number) {
+  if (round === "R32") {
+    return `R32W${number}`;
+  }
+
+  if (round === "R16") {
+    return `R16W${number}`;
+  }
+
+  if (round === "QF") {
+    return `QFW${number}`;
+  }
+
+  if (round === "SF") {
+    return `SFW${number}`;
+  }
+
+  return "";
+}
+
+function getCashbackLoserSlot(round, number) {
+  return round === "SF" ? `SFL${number}` : "";
+}
+
+function getCashbackPlaceholderKey(team) {
+  const displayName = team?.displayName || "";
+  const shortDisplayName = team?.shortDisplayName || "";
+  const abbreviation = team?.abbreviation || "";
+  const compactLabel = shortDisplayName || abbreviation;
+  const groupPosition = /^([123])([A-L])$/.exec(compactLabel);
+
+  if (groupPosition) {
+    return `${groupPosition[1]}${groupPosition[2]}`;
+  }
+
+  const groupWinner = /Group ([A-L]) Winner/.exec(displayName);
+
+  if (groupWinner) {
+    return `1${groupWinner[1]}`;
+  }
+
+  const groupSecond = /Group ([A-L]) 2nd Place/.exec(displayName);
+
+  if (groupSecond) {
+    return `2${groupSecond[1]}`;
+  }
+
+  const roundOf32Winner = /Round of 32 (\d+) Winner/.exec(displayName);
+
+  if (roundOf32Winner) {
+    return `R32W${roundOf32Winner[1]}`;
+  }
+
+  const roundOf16Winner = /Round of 16 (\d+) Winner/.exec(displayName);
+
+  if (roundOf16Winner) {
+    return `R16W${roundOf16Winner[1]}`;
+  }
+
+  const quarterfinalWinner = /Quarterfinal (\d+) Winner/.exec(displayName);
+
+  if (quarterfinalWinner) {
+    return `QFW${quarterfinalWinner[1]}`;
+  }
+
+  const semifinalWinner = /Semifinal (\d+) Winner/.exec(displayName);
+
+  if (semifinalWinner) {
+    return `SFW${semifinalWinner[1]}`;
+  }
+
+  const semifinalLoser = /Semifinal (\d+) Loser/.exec(displayName);
+
+  if (semifinalLoser) {
+    return `SFL${semifinalLoser[1]}`;
+  }
+
+  return "";
+}
+
+function getCashbackPlaceholderName(team, placeholderKey) {
+  if (/^[12][A-L]$/.test(placeholderKey)) {
+    return `${placeholderKey[0]}º Grupo ${placeholderKey[1]}`;
+  }
+
+  if (/^R32W\d+$/.test(placeholderKey)) {
+    return `Vencedor 16 avos ${placeholderKey.replace("R32W", "")}`;
+  }
+
+  if (/^R16W\d+$/.test(placeholderKey)) {
+    return `Vencedor oitavas ${placeholderKey.replace("R16W", "")}`;
+  }
+
+  if (/^QFW\d+$/.test(placeholderKey)) {
+    return `Vencedor quartas ${placeholderKey.replace("QFW", "")}`;
+  }
+
+  if (/^SFW\d+$/.test(placeholderKey)) {
+    return `Vencedor semifinal ${placeholderKey.replace("SFW", "")}`;
+  }
+
+  if (/^SFL\d+$/.test(placeholderKey)) {
+    return `Perdedor semifinal ${placeholderKey.replace("SFL", "")}`;
+  }
+
+  if ((team?.displayName || "").includes("Third Place")) {
+    return "3º colocado";
+  }
+
+  return team?.shortDisplayName || team?.displayName || "A definir";
+}
+
+function normalizeCashbackCompetitor(competitor) {
+  const espnTeam = competitor.team || {};
+  const abbreviation = espnTeam.abbreviation || espnTeam.shortDisplayName || "";
+  const placeholderKey = getCashbackPlaceholderKey(espnTeam);
+  const countryInfo = getCountryInfo(abbreviation, espnTeam.displayName || espnTeam.shortDisplayName);
+
+  return {
+    abbreviation,
+    name: placeholderKey ? getCashbackPlaceholderName(espnTeam, placeholderKey) : countryInfo.name,
+    flagSlug: placeholderKey ? "" : countryInfo.flagSlug,
+    displayName: espnTeam.displayName,
+    placeholderKey,
+    score: Number(competitor.score),
+    winner: competitor.winner === true
+  };
+}
+
+function isCompletedCashbackEvent(event) {
+  return event.competitions?.[0]?.status?.type?.completed === true;
+}
+
+function getCashbackEventCompetitors(event) {
+  return Array.isArray(event.competitions?.[0]?.competitors) ? event.competitions[0].competitors : [];
+}
+
+function getCashbackGroupRankings(events, groupLetter) {
+  const groupTeams = cashbackGroupTeams[groupLetter];
+
+  if (!groupTeams) {
+    return [];
+  }
+
+  const standings = groupTeams.reduce((currentStandings, abbreviation) => {
+    currentStandings[abbreviation] = {
+      abbreviation,
+      points: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      wins: 0
+    };
+
+    return currentStandings;
+  }, {});
+  let completedMatches = 0;
+
+  events.forEach((event) => {
+    if (event.season?.slug !== "group-stage" || !isCompletedCashbackEvent(event)) {
+      return;
+    }
+
+    const competitors = getCashbackEventCompetitors(event);
+    const abbreviations = competitors.map((competitor) => competitor.team?.abbreviation);
+
+    if (competitors.length !== 2 || !abbreviations.every((abbreviation) => groupTeams.includes(abbreviation))) {
+      return;
+    }
+
+    const first = competitors[0];
+    const second = competitors[1];
+    const firstAbbreviation = first.team.abbreviation;
+    const secondAbbreviation = second.team.abbreviation;
+    const firstScore = Number(first.score);
+    const secondScore = Number(second.score);
+
+    if (!Number.isFinite(firstScore) || !Number.isFinite(secondScore)) {
+      return;
+    }
+
+    completedMatches += 1;
+    standings[firstAbbreviation].goalsFor += firstScore;
+    standings[firstAbbreviation].goalsAgainst += secondScore;
+    standings[secondAbbreviation].goalsFor += secondScore;
+    standings[secondAbbreviation].goalsAgainst += firstScore;
+
+    if (firstScore > secondScore) {
+      standings[firstAbbreviation].points += 3;
+      standings[firstAbbreviation].wins += 1;
+    } else if (secondScore > firstScore) {
+      standings[secondAbbreviation].points += 3;
+      standings[secondAbbreviation].wins += 1;
+    } else {
+      standings[firstAbbreviation].points += 1;
+      standings[secondAbbreviation].points += 1;
+    }
+  });
+
+  if (completedMatches < 6) {
+    return [];
+  }
+
+  return Object.values(standings).sort((first, second) => {
+    const goalDifferenceDelta = (second.goalsFor - second.goalsAgainst) - (first.goalsFor - first.goalsAgainst);
+    const goalsForDelta = second.goalsFor - first.goalsFor;
+
+    return second.points - first.points || goalDifferenceDelta || goalsForDelta || second.wins - first.wins || first.abbreviation.localeCompare(second.abbreviation);
+  });
+}
+
+function getCashbackSlotReplacements(events) {
+  const slotReplacements = {};
+
+  Object.keys(cashbackGroupTeams).forEach((groupLetter) => {
+    getCashbackGroupRankings(events, groupLetter).forEach((team, index) => {
+      const countryInfo = getCountryInfo(team.abbreviation, team.abbreviation);
+
+      slotReplacements[`${index + 1}${groupLetter}`] = countryInfo;
+    });
+  });
+
+  events.forEach((event) => {
+    if (!isCompletedCashbackEvent(event)) {
+      return;
+    }
+
+    const roundInfo = cashbackRoundNumbersByEventId[event.id];
+
+    if (!roundInfo) {
+      return;
+    }
+
+    const competitors = getCashbackEventCompetitors(event)
+      .map(normalizeCashbackCompetitor)
+      .map((competitor) => resolveCashbackCompetitor(competitor, slotReplacements));
+    const winner = competitors.find((competitor) => competitor.winner === true);
+    const loser = competitors.find((competitor) => competitor.winner !== true);
+    const winnerSlot = getCashbackWinnerSlot(roundInfo.round, roundInfo.number);
+    const loserSlot = getCashbackLoserSlot(roundInfo.round, roundInfo.number);
+
+    if (winner && winnerSlot) {
+      slotReplacements[winnerSlot] = winner;
+    }
+
+    if (loser && loserSlot) {
+      slotReplacements[loserSlot] = loser;
+    }
+  });
+
+  return slotReplacements;
+}
+
+function resolveCashbackCompetitor(competitor, slotReplacements) {
+  if (!competitor.placeholderKey || !slotReplacements[competitor.placeholderKey]) {
+    return competitor;
+  }
+
+  return {
+    ...slotReplacements[competitor.placeholderKey],
+    winner: competitor.winner
+  };
+}
+
+function normalizeCashbackEvent(event, slotReplacements) {
+  const competitors = getCashbackEventCompetitors(event)
+    .map(normalizeCashbackCompetitor)
+    .map((competitor) => resolveCashbackCompetitor(competitor, slotReplacements));
+  const brazil = competitors.find(isBrazilTeam);
+  const isFinal = isCashbackFinalEvent(event);
+
+  if (!brazil && !isFinal) {
+    return null;
+  }
+
+  const opponent = competitors.find((competitor) => !isBrazilTeam(competitor)) || {
+    name: "A definir",
+    flagSlug: ""
+  };
+  const teams = brazil
+    ? [cashbackBrazilTeam, opponent]
+    : competitors.slice(0, 2);
+  const normalizedTeams = teams.length >= 2
+    ? teams
+    : [
+        teams[0] || { name: "Finalista 1", flagSlug: "" },
+        { name: "Finalista 2", flagSlug: "" }
+      ];
+
+  return {
+    id: `espn-${event.id}`,
+    espnEventId: String(event.id),
+    date: event.date,
+    stage: getCashbackStageLabel(event),
+    isFinal,
+    teams: normalizedTeams,
+    brazil: normalizedTeams[0],
+    opponent: normalizedTeams[1],
+    source: "espn"
+  };
+}
+
+function getCashbackMatchesFromEspn(events) {
+  if (!Array.isArray(events)) {
+    return [];
+  }
+
+  const slotReplacements = getCashbackSlotReplacements(events);
+
+  return events
+    .map((event) => normalizeCashbackEvent(event, slotReplacements))
+    .filter(Boolean)
+    .sort((first, second) => new Date(first.date) - new Date(second.date));
+}
+
+function mergeCashbackMatches(remoteMatches) {
+  const matchesByKey = new Map();
+
+  cashbackState.matches.forEach((match) => {
+    matchesByKey.set(match.espnEventId || match.id, match);
+  });
+
+  remoteMatches.forEach((match) => {
+    matchesByKey.set(match.espnEventId || match.id, match);
+  });
+
+  return Array.from(matchesByKey.values()).sort((first, second) => new Date(first.date) - new Date(second.date));
+}
+
+function getCashbackInitialIndex(matches, now = getCurrentDate()) {
+  const nextIndex = matches.findIndex((match) => new Date(match.date).getTime() + 3 * 60 * 60 * 1000 >= now.getTime());
+
+  return nextIndex === -1 ? Math.max(0, matches.length - 1) : nextIndex;
+}
+
+function getCashbackMatchForDate(now = getCurrentDate()) {
+  const currentDateKey = getSaoPauloDateKey(now);
+
+  return cashbackState.matches.find((match) => getSaoPauloDateKey(new Date(match.date)) === currentDateKey) || null;
+}
+
+function isCashbackMatchDay(now = getCurrentDate()) {
+  return Boolean(getCashbackMatchForDate(now));
+}
+
+function hasUpcomingCashbackMatch(now = getCurrentDate()) {
+  return cashbackState.matches.some((match) => new Date(match.date).getTime() > now.getTime());
+}
+
+function isCashbackPromotionVisible(now = getCurrentDate()) {
+  if (!cashbackPromotion) {
+    return hasUpcomingCashbackMatch(now);
+  }
+
+  return hasUpcomingCashbackMatch(now) || (now >= getItemStart(cashbackPromotion) && now <= getItemEnd(cashbackPromotion));
+}
+
+function positionCashbackSection(now = getCurrentDate()) {
+  if (!cashbackSection) {
+    return;
+  }
+
+  if (!missionsSection || isCashbackMatchDay(now)) {
+    return;
+  }
+
+  if (missionsSection.nextElementSibling !== cashbackSection) {
+    missionsSection.insertAdjacentElement("afterend", cashbackSection);
+  }
+}
+
+function renderCashbackMatch(match, options = {}) {
+  const teams = Array.isArray(match.teams) && match.teams.length >= 2
+    ? match.teams
+    : [match.brazil || cashbackBrazilTeam, match.opponent || { name: "A definir", flagSlug: "" }];
+  const firstTeam = teams[0];
+  const secondTeam = teams[1];
+  const dateLabel = options.dateLabel || formatCashbackMatchDate(match.date);
+  const renderFlag = (team, modifier) => {
+    const className = `cashback-match-card__flag cashback-match-card__flag--${modifier}`;
+
+    if (!team.flagSlug) {
+      return `<span class="${className}" aria-hidden="true"></span>`;
+    }
+
+    return `<img class="${className}" src="${escapeHtml(getFlagSource(team.flagSlug))}" alt="" data-country-flag data-country-fallback="${escapeHtml(cashbackFallbackFlag)}">`;
+  };
+
+  return `
+    <article class="cashback-match-card" data-cashback-slide>
+      <div class="cashback-match-card__meta">
+        <span class="cashback-match-card__stage">${escapeHtml(match.stage)}</span>
+        <time class="cashback-match-card__date" datetime="${escapeHtml(match.date)}">${escapeHtml(dateLabel)}</time>
+      </div>
+
+      <div class="cashback-match-card__confrontation">
+        <p class="cashback-match-card__team">${escapeHtml(firstTeam.name)}</p>
+        <div class="cashback-match-card__versus" aria-hidden="true">
+          ${renderFlag(firstTeam, "brazil")}
+          <span class="cashback-match-card__vs">vs</span>
+          ${renderFlag(secondTeam, "opponent")}
+        </div>
+        <p class="cashback-match-card__team">${escapeHtml(secondTeam.name)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function getCashbackTrackTransform(deltaX = 0) {
+  const baseOffset = -cashbackState.currentIndex * 100;
+
+  return deltaX === 0
+    ? `translate3d(${baseOffset}%, 0, 0)`
+    : `translate3d(calc(${baseOffset}% + ${deltaX}px), 0, 0)`;
+}
+
+function getCashbackTrack() {
+  return cashbackMatchRoot ? cashbackMatchRoot.querySelector("[data-cashback-track]") : null;
+}
+
+function updateCashbackCarouselState() {
+  if (!cashbackMatchRoot) {
+    return;
+  }
+
+  const matches = cashbackState.matches;
+  const maxIndex = Math.max(0, matches.length - 1);
+
+  cashbackState.currentIndex = Math.min(Math.max(cashbackState.currentIndex, 0), maxIndex);
+
+  const track = getCashbackTrack();
+
+  if (track) {
+    track.style.transition = "";
+    track.style.transform = getCashbackTrackTransform();
+  }
+
+  cashbackMatchRoot.querySelectorAll("[data-cashback-slide]").forEach((slide, index) => {
+    slide.setAttribute("aria-hidden", index === cashbackState.currentIndex ? "false" : "true");
+  });
+
+  updateCashbackSectionCopy(matches[cashbackState.currentIndex]);
+
+  if (cashbackPreviousButton) {
+    cashbackPreviousButton.disabled = matches.length <= 1 || cashbackState.currentIndex === 0;
+  }
+
+  if (cashbackNextButton) {
+    cashbackNextButton.disabled = matches.length <= 1 || cashbackState.currentIndex === maxIndex;
+  }
+}
+
+function renderCashbackSection(now = getCurrentDate()) {
+  if (!cashbackSection || !cashbackMatchRoot) {
+    return;
+  }
+
+  const matches = cashbackState.matches;
+
+  cashbackSection.hidden = matches.length === 0 || isCashbackMatchDay(now) || !isCashbackPromotionVisible(now);
+
+  if (matches.length === 0) {
+    cashbackMatchRoot.innerHTML = "";
+    return;
+  }
+
+  cashbackState.currentIndex = Math.min(Math.max(cashbackState.currentIndex, 0), matches.length - 1);
+  cashbackMatchRoot.innerHTML = `
+    <div class="cashback__track" data-cashback-track>
+      ${matches.map(renderCashbackMatch).join("")}
+    </div>
+  `;
+
+  updateCashbackCarouselState();
+  positionCashbackSection(now);
+}
+
+function showCashbackMatch(direction) {
+  const matches = cashbackState.matches;
+  const nextIndex = cashbackState.currentIndex + direction;
+
+  if (matches.length <= 1 || nextIndex < 0 || nextIndex >= matches.length) {
+    return;
+  }
+
+  cashbackState.currentIndex = nextIndex;
+  updateCashbackCarouselState();
+}
+
+function setupCashbackSwipe() {
+  if (!cashbackMatchRoot) {
+    return;
+  }
+
+  let startX = 0;
+  let startY = 0;
+  let lastX = 0;
+  let pointerMode;
+  let activePointerId;
+  let isDragging = false;
+
+  cashbackMatchRoot.addEventListener("pointerdown", (event) => {
+    if (event.button > 0 || cashbackState.matches.length <= 1) {
+      return;
+    }
+
+    startX = event.clientX;
+    startY = event.clientY;
+    lastX = event.clientX;
+    pointerMode = undefined;
+    activePointerId = event.pointerId;
+    isDragging = true;
+
+    if (cashbackMatchRoot.setPointerCapture) {
+      cashbackMatchRoot.setPointerCapture(event.pointerId);
+    }
+  });
+
+  cashbackMatchRoot.addEventListener("pointermove", (event) => {
+    if (!isDragging || event.pointerId !== activePointerId) {
+      return;
+    }
+
+    lastX = event.clientX;
+
+    const distanceX = lastX - startX;
+    const distanceY = event.clientY - startY;
+
+    if (!pointerMode) {
+      if (Math.abs(distanceX) < 8 && Math.abs(distanceY) < 8) {
+        return;
+      }
+
+      pointerMode = Math.abs(distanceX) > Math.abs(distanceY) * 1.25 ? "horizontal" : "vertical";
+    }
+
+    if (pointerMode !== "horizontal") {
+      return;
+    }
+
+    event.preventDefault();
+
+    const maxIndex = Math.max(0, cashbackState.matches.length - 1);
+    const isPullingBeforeStart = cashbackState.currentIndex === 0 && distanceX > 0;
+    const isPullingAfterEnd = cashbackState.currentIndex === maxIndex && distanceX < 0;
+    const visibleDistanceX = isPullingBeforeStart || isPullingAfterEnd ? distanceX * 0.28 : distanceX;
+    const track = getCashbackTrack();
+
+    cashbackMatchRoot.classList.add("is-swiping");
+
+    if (track) {
+      track.style.transition = "none";
+      track.style.transform = getCashbackTrackTransform(visibleDistanceX);
+    }
+  });
+
+  function finishSwipe() {
+    if (!isDragging) {
+      return;
+    }
+
+    const distanceX = lastX - startX;
+    const direction = distanceX < 0 ? 1 : -1;
+    const nextIndex = cashbackState.currentIndex + direction;
+    const maxIndex = Math.max(0, cashbackState.matches.length - 1);
+    const minDistance = Math.min(90, (cashbackMatchRoot.clientWidth || 0) * 0.22);
+    const shouldMove = pointerMode === "horizontal" && Math.abs(distanceX) >= minDistance && nextIndex >= 0 && nextIndex <= maxIndex;
+
+    isDragging = false;
+    pointerMode = undefined;
+    activePointerId = undefined;
+    cashbackMatchRoot.classList.remove("is-swiping");
+
+    if (shouldMove) {
+      showCashbackMatch(direction);
+      return;
+    }
+
+    updateCashbackCarouselState();
+  }
+
+  cashbackMatchRoot.addEventListener("pointerup", finishSwipe);
+  cashbackMatchRoot.addEventListener("pointercancel", finishSwipe);
+  cashbackMatchRoot.addEventListener("lostpointercapture", finishSwipe);
+}
+
+async function fetchCashbackMatches() {
+  if (!cashbackSection) {
+    return;
+  }
+
+  try {
+    const response = await fetch(cashbackScoreboardUrl, { cache: "no-store" });
+
+    if (!response.ok) {
+      throw new Error("Unable to load World Cup matches");
+    }
+
+    const data = await response.json();
+    const remoteMatches = getCashbackMatchesFromEspn(data.events);
+
+    if (remoteMatches.length === 0) {
+      renderCashbackSection();
+      renderPromotionSections();
+      refreshPromotionRenderEffects();
+      return;
+    }
+
+    cashbackState.matches = mergeCashbackMatches(remoteMatches);
+    cashbackState.currentIndex = getCashbackInitialIndex(cashbackState.matches);
+    renderCashbackSection();
+    renderPromotionSections();
+    refreshPromotionRenderEffects();
+  } catch (error) {
+    renderCashbackSection();
+    renderPromotionSections();
+    refreshPromotionRenderEffects();
+  }
+}
+
+function renderMissionCard(mission, now = getCurrentDate()) {
   const status = getItemStatus(mission, now);
+  const mediaMarkup = mission.image
+    ? `<img class="mission-card__image" src="${escapeHtml(mission.image)}" alt="${escapeHtml(mission.imageAlt || "")}">`
+    : `<span class="mission-card__placeholder" aria-hidden="true"></span>`;
+  const providerMarkup = mission.providerName
+    ? `<p class="mission-card__provider">${escapeHtml(mission.providerName)}</p>`
+    : "";
 
   return `
     <article class="mission-card">
       <div class="mission-card__media">
-        <img class="mission-card__image" src="${escapeHtml(mission.image)}" alt="${escapeHtml(mission.imageAlt || "")}">
+        ${mediaMarkup}
       </div>
 
       <div class="mission-card__content">
         <p class="mission-card__text">${escapeHtml(mission.text)}</p>
+        ${providerMarkup}
         ${getMissionButton(mission, status)}
       </div>
     </article>
   `;
 }
 
-function renderMissions(now = new Date()) {
+function renderMissions(now = getCurrentDate()) {
   if (!missionsList) {
     return;
+  }
+
+  if (missionsSection) {
+    missionsSection.hidden = missions.length === 0;
   }
 
   missionsList.innerHTML = getSortedMissions(now)
@@ -360,15 +1346,69 @@ function renderPromosDescription() {
 
   const tournamentCount = promotions.filter((promotion) => promotion.type === "tournament").length;
   const prizeDropCount = promotions.filter((promotion) => promotion.type === "prizeDrop").length;
+  const totalPromotions = tournamentCount + prizeDropCount;
+  const totalLabel = totalPromotions === 1 ? "promoção" : "promoções";
   const tournamentLabel = tournamentCount === 1 ? "Torneio" : "Torneios";
   const prizeDropLabel = prizeDropCount === 1 ? "Prize Drop" : "Prize Drops";
+  const promoTypes = [];
 
-  promosDescription.textContent = `São ${tournamentCount} ${tournamentLabel} e ${prizeDropCount} ${prizeDropLabel} para você ganhar prêmios durante toda a Copa do Mundo. Aproveite!!!`;
+  if (tournamentCount > 0) {
+    promoTypes.push(`${tournamentCount} ${tournamentLabel}`);
+  }
+
+  if (prizeDropCount > 0) {
+    promoTypes.push(`${prizeDropCount} ${prizeDropLabel}`);
+  }
+
+  promosDescription.textContent = `São ${totalPromotions} ${totalLabel} no total: ${promoTypes.join(" e ")} para você ganhar prêmios durante toda a Copa do Mundo. Aproveite!!!`;
 }
 
 renderMissions();
 
-function renderFeaturedPromotion(promotion, now = new Date()) {
+if (cashbackSection) {
+  cashbackState.currentIndex = getCashbackInitialIndex(cashbackState.matches);
+  renderCashbackSection();
+  fetchCashbackMatches();
+  setInterval(fetchCashbackMatches, cashbackRefreshMs);
+}
+
+function renderFeaturedCashback(now = getCurrentDate()) {
+  if (!cashbackPromotion) {
+    return "";
+  }
+
+  const match = getCashbackMatchForDate(now);
+
+  if (!match) {
+    return "";
+  }
+
+  const copy = getCashbackCopy(match);
+
+  return `
+    <section class="featured-cashback" aria-labelledby="featured-cashback-title">
+      <div class="featured-cashback__copy">
+        <div class="featured-cashback__heading">
+          <img class="featured-cashback__icon" src="images/icon-cashback.png?v=icons-20260529" alt="">
+          <h2 class="featured-cashback__title" id="featured-cashback-title">${escapeHtml(copy.featuredTitle)}</h2>
+        </div>
+
+        <p class="featured-cashback__description">${escapeHtml(copy.featuredDescription)}</p>
+
+        <div class="featured-cashback__actions">
+          <a class="featured-cashback__button featured-cashback__button--primary" href="${escapeHtml(cashbackPromotion.playUrl || "#")}">Jogar Agora</a>
+          <button class="featured-cashback__button featured-cashback__button--secondary" type="button" data-promo-detail-id="${escapeHtml(cashbackPromotion.id)}">Saiba Mais</button>
+        </div>
+      </div>
+
+      <div class="featured-cashback__match" aria-label="${escapeHtml(copy.featuredMatchLabel)}">
+        ${renderCashbackMatch(match, { dateLabel: formatCashbackMatchToday(match.date) })}
+      </div>
+    </section>
+  `;
+}
+
+function renderFeaturedPromotion(promotion, now = getCurrentDate()) {
   if (!featuredPromoSection || !featuredPromoRoot) {
     return;
   }
@@ -382,16 +1422,22 @@ function renderFeaturedPromotion(promotion, now = new Date()) {
   const statusViewModel = getStatusViewModel(promotion, now);
   const period = formatPromotionPeriod(promotion);
   const games = Array.isArray(promotion.gameImages) ? promotion.gameImages : [];
+  const gameDisplayMode = getGameDisplayMode(promotion);
+  const featuredGamesClass = promotion.featuredGamesClass ? ` ${escapeHtml(promotion.featuredGamesClass)}` : "";
   const gamesMarkup = games
-    .map((game) => `<img class="featured-promo__game" src="${escapeHtml(game.src)}" alt="${escapeHtml(game.alt || "")}">`)
+    .map((game) => renderGameImage(game, "featured-promo__game"))
     .join("");
+  const featuredCashbackMarkup = renderFeaturedCashback(now);
+  const featuredCashbackClass = featuredCashbackMarkup ? " featured-promo--cashback-active" : "";
 
   featuredPromoSection.hidden = false;
   featuredPromoRoot.innerHTML = `
-    <div class="featured-promo">
+    <div class="featured-promo${featuredCashbackClass}">
+      ${featuredCashbackMarkup}
+
       <div class="featured-promo__header">
         <div class="featured-promo__heading">
-          <img class="featured-promo__icon" src="images/icon-promocao-destaque.png" alt="">
+          <img class="featured-promo__icon" src="images/icon-promocao-destaque.png?v=icons-20260529" alt="">
           <h2 class="featured-promo__title" id="featured-promo-title">Promoção em Destaque</h2>
         </div>
 
@@ -422,7 +1468,7 @@ function renderFeaturedPromotion(promotion, now = new Date()) {
         <img class="featured-promo__brand featured-promo__brand--desktop" src="${escapeHtml(promotion.providerLogo)}" alt="${escapeHtml(promotion.providerName)}">
       </div>
 
-      <div class="featured-promo__games" aria-label="Jogos da promoção">
+      <div class="featured-promo__games featured-promo__games--${escapeHtml(gameDisplayMode)}${featuredGamesClass}" aria-label="Jogos da promoção">
         ${gamesMarkup}
       </div>
 
@@ -434,15 +1480,13 @@ function renderFeaturedPromotion(promotion, now = new Date()) {
   `;
 }
 
-function renderPromotionCard(promotion, index, now = new Date()) {
+function renderPromotionCard(promotion, index, now = getCurrentDate()) {
   const statusViewModel = getStatusViewModel(promotion, now);
   const cardClass = getStatusCardClass(statusViewModel.status);
   const brandClass = promotion.providerLogoClass ? ` ${promotion.providerLogoClass}` : "";
 
   return `
     <article class="upcoming-promo-card ${cardClass}" style="z-index: ${index + 1}">
-      <img class="upcoming-promo-card__background" src="${escapeHtml(promotion.backgroundImage)}" alt="">
-
       <div class="upcoming-promo-card__content">
         <img class="upcoming-promo-card__brand${brandClass}" src="${escapeHtml(promotion.providerLogo)}" alt="${escapeHtml(promotion.providerName)}">
 
@@ -470,6 +1514,27 @@ function renderPromotionCard(promotion, index, now = new Date()) {
         </div>
       </div>
     </article>
+  `;
+}
+
+function renderGameImage(game, className) {
+  const optionalAttribute = game.optional === true ? ' data-optional-game-image="true"' : "";
+
+  return `<img class="${className}" src="${escapeHtml(game.src)}" alt="${escapeHtml(game.alt || "")}"${optionalAttribute}>`;
+}
+
+function renderPromotionDetailGame(game) {
+  const image = renderGameImage(game, "promo-detail__game");
+
+  if (game.optional !== true) {
+    return image;
+  }
+
+  return `
+    <span class="promo-detail__game-tile">
+      ${image}
+      <span class="promo-detail__game-fallback" hidden>${escapeHtml(game.alt || "Jogo")}</span>
+    </span>
   `;
 }
 
@@ -513,25 +1578,32 @@ function renderPromotionDetailFaq(item, index) {
   `;
 }
 
-function renderPromotionDetail(promotion, now = new Date()) {
+function renderPromotionDetail(promotion, now = getCurrentDate()) {
   if (!promoDetailHeader || !promoDetailBody || !promoDetailFooter || !hasPromotionDetails(promotion)) {
     return;
   }
 
-  const details = promotion.details;
-  const statusViewModel = getStatusViewModel(promotion, now);
+  const detailPromotion = promotion;
+  const details = detailPromotion.details;
+  const statusViewModel = getStatusViewModel(detailPromotion, now);
   const howItWorks = Array.isArray(details.howItWorks) ? details.howItWorks : [];
   const faq = Array.isArray(details.faq) ? details.faq : [];
+  const games = Array.isArray(detailPromotion.gameImages) ? detailPromotion.gameImages : [];
+  const gameDisplayMode = getGameDisplayMode(detailPromotion);
+  const detailGamesClass = detailPromotion.detailGamesClass ? ` ${escapeHtml(detailPromotion.detailGamesClass)}` : "";
   const stepsMarkup = howItWorks.map(renderPromotionDetailStep).join("");
   const faqMarkup = faq.map(renderPromotionDetailFaq).join("");
+  const gamesMarkup = games
+    .map(renderPromotionDetailGame)
+    .join("");
   const termsMarkup = details.termsSummary
     ? `<p class="promo-detail__terms">${escapeHtml(details.termsSummary)}</p>`
     : "";
 
   promoDetailHeader.innerHTML = `
     <div class="promo-detail__header-main">
-      <p class="promo-detail__eyebrow">${escapeHtml(promotion.providerName)}</p>
-      <h2 class="promo-detail__title" id="promo-detail-title">${escapeHtml(promotion.title)}</h2>
+      <p class="promo-detail__eyebrow">${escapeHtml(detailPromotion.providerName)}</p>
+      <h2 class="promo-detail__title" id="promo-detail-title">${escapeHtml(detailPromotion.title)}</h2>
     </div>
 
     <button class="promo-detail__close" type="button" aria-label="Fechar detalhes da promoção" data-promo-detail-close>
@@ -546,12 +1618,12 @@ function renderPromotionDetail(promotion, now = new Date()) {
 
       <div class="promo-detail__meta-item">
         <dt>Período</dt>
-        <dd>${escapeHtml(formatPromotionPeriod(promotion))}</dd>
+        <dd>${escapeHtml(formatPromotionPeriod(detailPromotion))}</dd>
       </div>
 
       <div class="promo-detail__meta-item">
-        <dt>${escapeHtml(promotion.prizeLabel)}</dt>
-        <dd>${escapeHtml(promotion.prizeValue)}</dd>
+        <dt>${escapeHtml(detailPromotion.prizeLabel)}</dt>
+        <dd>${escapeHtml(detailPromotion.prizeValue)}</dd>
       </div>
     </dl>
   `;
@@ -563,6 +1635,15 @@ function renderPromotionDetail(promotion, now = new Date()) {
         <ol class="promo-detail__steps">
           ${stepsMarkup}
         </ol>
+      </section>
+    ` : ""}
+
+    ${gamesMarkup ? `
+      <section class="promo-detail__section" aria-labelledby="promo-detail-games-title">
+        <h3 class="promo-detail__section-title" id="promo-detail-games-title">Jogos participantes</h3>
+        <div class="promo-detail__games promo-detail__games--${escapeHtml(gameDisplayMode)}${detailGamesClass}" aria-label="Jogos participantes da promoção">
+          ${gamesMarkup}
+        </div>
       </section>
     ` : ""}
 
@@ -578,7 +1659,8 @@ function renderPromotionDetail(promotion, now = new Date()) {
     ${termsMarkup}
   `;
 
-  promoDetailFooter.innerHTML = getPrimaryButton(promotion, statusViewModel.status, "promo-detail");
+  promoDetailBody.querySelectorAll(".promo-detail__games").forEach(setupDraggableCarousel);
+  promoDetailFooter.innerHTML = getPrimaryButton(detailPromotion, statusViewModel.status, "promo-detail");
 }
 
 function lockPromoDetailPageScroll() {
@@ -702,7 +1784,7 @@ function setupPromotionDetailDrag() {
 }
 
 function openPromotionDetail(promotionId, triggerElement) {
-  const promotion = promotions.find((currentPromotion) => currentPromotion.id === promotionId);
+  const promotion = getPromotionById(promotionId);
 
   if (!promotion || !promoDetailRoot || !hasPromotionDetails(promotion)) {
     return;
@@ -743,7 +1825,7 @@ function closePromotionDetail() {
   promoDetailCloseFocusTarget = undefined;
 }
 
-function renderPromotionSections(now = new Date()) {
+function renderPromotionSections(now = getCurrentDate()) {
   const featuredPromotion = getFeaturedPromotion(now);
   const sortedPromotions = getSortedPromotions(featuredPromotion, now);
 
@@ -757,7 +1839,7 @@ function renderPromotionSections(now = new Date()) {
   }
 
   if (activePromoDetailId) {
-    const activePromotion = promotions.find((promotion) => promotion.id === activePromoDetailId);
+    const activePromotion = getPromotionById(activePromoDetailId);
 
     if (activePromotion) {
       renderPromotionDetail(activePromotion, now);
@@ -765,12 +1847,17 @@ function renderPromotionSections(now = new Date()) {
   }
 }
 
+function refreshPromotionRenderEffects() {
+  document.querySelectorAll(".featured-promo__games").forEach(setupDraggableCarousel);
+  window.dispatchEvent(new CustomEvent("promotionsrendered"));
+}
+
 function updatePromotionTimers() {
-  const now = new Date();
+  const now = getCurrentDate();
   let shouldRenderSections = false;
 
   document.querySelectorAll("[data-promo-timer]").forEach((element) => {
-    const promotion = promotions.find((currentPromotion) => currentPromotion.id === element.dataset.promoTimer);
+    const promotion = getPromotionById(element.dataset.promoTimer);
 
     if (!promotion) {
       return;
@@ -793,19 +1880,18 @@ function updatePromotionTimers() {
 
   if (shouldRenderSections) {
     renderPromotionSections(now);
-    document.querySelectorAll(".featured-promo__games").forEach(setupDraggableCarousel);
-    window.dispatchEvent(new CustomEvent("promotionsrendered"));
+    refreshPromotionRenderEffects();
   }
 }
 
 renderPromotionSections();
 
-function getPromotionTimerDelay(now = new Date()) {
+function getPromotionTimerDelay(now = getCurrentDate()) {
   let hasPendingTimer = false;
   let needsSecondPrecision = false;
 
   document.querySelectorAll("[data-promo-timer]").forEach((element) => {
-    const promotion = promotions.find((currentPromotion) => currentPromotion.id === element.dataset.promoTimer);
+    const promotion = getPromotionById(element.dataset.promoTimer);
 
     if (!promotion) {
       return;
@@ -978,6 +2064,10 @@ if (siteHeader) {
 }
 
 function setupDraggableCarousel(carousel) {
+  if (carousel.classList.contains("featured-promo__games--spotlight") || carousel.classList.contains("promo-detail__games--spotlight")) {
+    return;
+  }
+
   if (carousel.dataset.draggableCarouselReady === "true") {
     return;
   }
@@ -1097,7 +2187,17 @@ function setupDraggableCarousel(carousel) {
   carousel.addEventListener("touchcancel", clearTouchMode, { passive: true });
 }
 
-document.querySelectorAll(".featured-promo__games, .missions__grid").forEach(setupDraggableCarousel);
+document.querySelectorAll(".featured-promo__games, .promo-detail__games, .missions__grid").forEach(setupDraggableCarousel);
+
+if (cashbackPreviousButton) {
+  cashbackPreviousButton.addEventListener("click", () => showCashbackMatch(-1));
+}
+
+if (cashbackNextButton) {
+  cashbackNextButton.addEventListener("click", () => showCashbackMatch(1));
+}
+
+setupCashbackSwipe();
 
 document.addEventListener("click", (event) => {
   const detailTrigger = event.target.closest("[data-promo-detail-id]");
@@ -1161,39 +2261,3 @@ if (missionsList) {
     missionsList.scrollLeft = currentScrollLeft;
   }, 60000);
 }
-
-document.querySelectorAll(".faq").forEach((faq) => {
-  const items = faq.querySelectorAll(".faq__item");
-
-  items.forEach((item) => {
-    const button = item.querySelector(".faq__button");
-    const panel = item.querySelector(".faq__panel");
-
-    if (!button || !panel) {
-      return;
-    }
-
-    button.addEventListener("click", () => {
-      const shouldOpen = button.getAttribute("aria-expanded") !== "true";
-
-      items.forEach((currentItem) => {
-        const currentButton = currentItem.querySelector(".faq__button");
-        const currentPanel = currentItem.querySelector(".faq__panel");
-
-        if (!currentButton || !currentPanel) {
-          return;
-        }
-
-        currentButton.setAttribute("aria-expanded", "false");
-        currentPanel.hidden = true;
-        currentItem.classList.remove("is-open");
-      });
-
-      if (shouldOpen) {
-        button.setAttribute("aria-expanded", "true");
-        panel.hidden = false;
-        item.classList.add("is-open");
-      }
-    });
-  });
-});
