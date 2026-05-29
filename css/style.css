@@ -2041,14 +2041,14 @@ html[data-theme="light"] .promo-detail__button--ended {
   }
 
   .promo-detail__panel {
-    max-height: calc(100svh - 80px);
+    max-height: calc(100svh - 24px);
   }
 }
 
 @supports (height: 100dvh) {
   @media (max-width: 520px) {
     .promo-detail__panel {
-      max-height: calc(100dvh - 80px);
+      max-height: calc(100dvh - 24px);
     }
   }
 }
@@ -3065,8 +3065,14 @@ html[data-theme="light"] .site-footer__age-icon {
 
   .cashback__rule {
     width: 100%;
+    max-width: none;
     font-size: 12px;
     text-align: center;
+    white-space: nowrap;
+  }
+
+  .cashback__rule br {
+    display: none;
   }
 
   .cashback__carousel {
