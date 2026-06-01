@@ -2,7 +2,7 @@ window.COPA_PROMOTIONS = [
   {
     id: "pg-folia",
     type: "tournament",
-    title: "PG Folia",
+    title: "Hat-Trick PG Soft",
     providerName: "PG Soft",
     displayPriority: 1,
     startDate: "2026-06-10",
@@ -12,7 +12,7 @@ window.COPA_PROMOTIONS = [
     backgroundImage: "images/bg-banner-pragmatic.png",
     providerLogo: "images/logoProvedorPGSoft.png",
     providerLogoClass: "upcoming-promo-card__brand--pg-soft",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/torneios/hat-trick-pg-soft",
     rulesUrl: "#",
     details: {
       howItWorks: [
@@ -23,7 +23,7 @@ window.COPA_PROMOTIONS = [
       faq: [
         {
           question: "Preciso me inscrever para participar?",
-          answer: "Não. Todos os jogadores participam automaticamente do PG Folia."
+          answer: "Não. Todos os jogadores participam automaticamente do Hat-Trick PG Soft."
         },
         {
           question: "Quais entradas contam para o torneio?",
@@ -39,7 +39,7 @@ window.COPA_PROMOTIONS = [
         },
         {
           question: "Quantos jogadores serão premiados?",
-          answer: "Serão premiados 400 jogadores no PG Folia."
+          answer: "Serão premiados 400 jogadores no Hat-Trick PG Soft."
         },
         {
           question: "Como será feito o pagamento?",
@@ -103,7 +103,7 @@ window.COPA_PROMOTIONS = [
   {
     id: "sortudo-prize-drop",
     type: "prizeDrop",
-    title: "Sortudo",
+    title: "Prêmios da Copa",
     providerName: "Pragmatic Play",
     displayPriority: 6,
     startDate: "2026-06-11",
@@ -113,7 +113,7 @@ window.COPA_PROMOTIONS = [
     backgroundImage: "images/bg-banner-pragmatic.png",
     providerLogo: "images/logoProvedorPragmatic.png",
     providerLogoClass: "upcoming-promo-card__brand--pragmatic",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/cassino/page/premios-da-copa",
     rulesUrl: "#",
     details: {
       howItWorks: [
@@ -124,7 +124,7 @@ window.COPA_PROMOTIONS = [
       faq: [
         {
           question: "Preciso me inscrever para participar?",
-          answer: "Não. Todos os jogadores participam automaticamente do Prize Drop Sortudo."
+          answer: "Não. Todos os jogadores participam automaticamente dos Prêmios da Copa."
         },
         {
           question: "Quais apostas concorrem aos prêmios?",
@@ -163,7 +163,7 @@ window.COPA_PROMOTIONS = [
   {
     id: "popok",
     type: "tournament",
-    title: "PopOK",
+    title: "Virada Épica Popok",
     providerName: "PopOK",
     displayPriority: 2,
     startDate: "2026-06-21",
@@ -173,7 +173,7 @@ window.COPA_PROMOTIONS = [
     backgroundImage: "images/bg-banner-pragmatic.png",
     providerLogo: "images/logoProvedorPopOK.png",
     providerLogoClass: "upcoming-promo-card__brand--popok",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/torneios/virada-epica-popok",
     rulesUrl: "#",
     details: {
       howItWorks: [
@@ -184,7 +184,7 @@ window.COPA_PROMOTIONS = [
       faq: [
         {
           question: "Preciso me inscrever para participar?",
-          answer: "Não. Todos os jogadores participam automaticamente do torneio PopOK."
+          answer: "Não. Todos os jogadores participam automaticamente do torneio Virada Épica Popok."
         },
         {
           question: "Quais entradas contam para o torneio?",
@@ -200,7 +200,7 @@ window.COPA_PROMOTIONS = [
         },
         {
           question: "Quantos jogadores serão premiados?",
-          answer: "Serão premiados 300 jogadores no torneio PopOK."
+          answer: "Serão premiados 300 jogadores no torneio Virada Épica Popok."
         },
         {
           question: "Como será feito o pagamento?",
@@ -248,7 +248,7 @@ window.COPA_PROMOTIONS = [
   {
     id: "hacksaw",
     type: "tournament",
-    title: "Hacksaw",
+    title: "Golaço Hacksaw",
     providerName: "Hacksaw",
     displayPriority: 3,
     startDate: "2026-07-01",
@@ -258,7 +258,7 @@ window.COPA_PROMOTIONS = [
     backgroundImage: "images/bg-banner-pragmatic.png",
     providerLogo: "images/logoProvedorHacksaw.png",
     providerLogoClass: "upcoming-promo-card__brand--hacksaw",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/torneios/golaco-hacksaw",
     rulesUrl: "#",
     details: {
       howItWorks: [
@@ -269,7 +269,7 @@ window.COPA_PROMOTIONS = [
       faq: [
         {
           question: "Preciso me inscrever para participar?",
-          answer: "Não. Todos os jogadores participam automaticamente do torneio Hacksaw."
+          answer: "Não. Todos os jogadores participam automaticamente do torneio Golaço Hacksaw."
         },
         {
           question: "Quais entradas contam para o torneio?",
@@ -285,7 +285,7 @@ window.COPA_PROMOTIONS = [
         },
         {
           question: "Quantos jogadores serão premiados?",
-          answer: "Serão premiados 250 jogadores no torneio Hacksaw."
+          answer: "Serão premiados 250 jogadores no torneio Golaço Hacksaw."
         },
         {
           question: "Como será feito o pagamento?",
@@ -352,7 +352,7 @@ window.COPA_PROMOTIONS = [
     backgroundImage: "images/bg-banner-pragmatic.png",
     providerLogo: "images/logoProvedorGamesGlobal.png",
     providerLogoClass: "upcoming-promo-card__brand--games-global",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/cassino/page/gol-de-ouro",
     rulesUrl: "#",
     missingGameImages: [
       "Kick Crash Crash",
@@ -419,7 +419,7 @@ window.COPA_PROMOTIONS = [
   {
     id: "aviator-studios",
     type: "tournament",
-    title: "Aviator Studios",
+    title: "Taça de Ouro Aviator",
     providerName: "Aviator Studios",
     displayPriority: 4,
     startDate: "2026-07-11",
@@ -432,7 +432,7 @@ window.COPA_PROMOTIONS = [
     gameDisplay: "spotlight",
     featuredGamesClass: "featured-promo__games--aviator",
     detailGamesClass: "promo-detail__games--aviator",
-    playUrl: "#",
+    playUrl: "https://pitaco.bet.br/torneios/taça-de-ouro-aviator",
     rulesUrl: "#",
     details: {
       howItWorks: [
@@ -443,7 +443,7 @@ window.COPA_PROMOTIONS = [
       faq: [
         {
           question: "Preciso me inscrever para participar?",
-          answer: "Não. Todos os jogadores participam automaticamente do torneio Aviator Studios."
+          answer: "Não. Todos os jogadores participam automaticamente do torneio Taça de Ouro Aviator."
         },
         {
           question: "Quais entradas contam para o torneio?",
@@ -459,7 +459,7 @@ window.COPA_PROMOTIONS = [
         },
         {
           question: "Quantos jogadores serão premiados?",
-          answer: "Serão premiados 250 jogadores no torneio Aviator Studios."
+          answer: "Serão premiados 250 jogadores no torneio Taça de Ouro Aviator."
         },
         {
           question: "Como será feito o pagamento?",
